@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de gastos 2026 - v1.4</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        }
+        body {
+            background-color: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 8px;
+        }
+        .container {
+            background-color: #ffffff;
+            width: 100%;
+            max-width: 440px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        h2 {
+            text-align: center;
+            color: #1e293b;
+            margin-bottom: 10px;
+            font-weight: 700;
+            font-size: 16px;
+        }
+        .form-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        .form-group {
+            margin-bottom: 8px;
+        }
+        label {
+            display: block;
+            margin-bottom: 2px;
+            color: #475569;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 7px 9px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #0f172a;
+            background-color: #f8fafc;
+            -webkit-appearance: none;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background-color: #ffffff;
+        }
+        textarea {
+            resize: none;
+            height: 36px;
+            font-size: 13px;
+        }
+        
+        /* Grid para botones de Cuenta (7 columnas para Cuenta Principal) */
+        .btn-group-toggle-cuenta {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+        /* Grid para botones de Cuenta de Ahorro (6 columnas para acomodar 12 valores simétricamente) */
+        .btn-group-toggle-ahorro {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 4px;
+        }
+        .btn-toggle {
+            padding: 5px 0;
+            background-color: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            color: #475569;
+            font-size: 11px;
+            font-weight: 700;
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+        }
+        .btn-toggle.active {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+            color: #ffffff;
+        }
+
+        /* Grid Fijo de Categorías */
+        .categorias-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+            padding: 2px 0;
+        }
+        .btn-categoria {
+            padding: 5px 2px;
+            background-color: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            color: #475569;
+            font-size: 11.5px;
+            font-weight: 700;
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+        }
+        .btn-categoria.active {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+            color: #ffffff;
+        }
+
+        /* Contenedor de Conceptos - Grid de 3 Columnas sin Scroll */
+        .conceptos-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+            border: 1.5px solid #cbd5e1;
+            padding: 6px;
+            border-radius: 6px;
+            background-color: #f8fafc;
+        }
+        .btn-concepto {
+            text-align: center;
+            padding: 5px 2px;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            color: #334155;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 28px;
+        }
+        .btn-concepto.active {
+            background-color: #6366f1;
+            border-color: #6366f1;
+            color: #ffffff;
+        }
+        .btn-concepto.disabled {
+            grid-column: span 3;
+            background-color: #f1f5f9;
+            color: #94a3b8;
+            border-color: #e2e8f0;
+            cursor: not-allowed;
+            opacity: 0.6;
+            text-align: center;
+        }
+
+        /* Sección de Apartado */
+        .seccion-apartado {
+            background-color: #f8fafc;
+            border: 1px dashed #94a3b8;
+            border-radius: 8px;
+            padding: 8px;
+            margin: 8px 0;
+            display: none;
+        }
+        .radio-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #f1f5f9;
+            padding: 5px 10px;
+            border-radius: 6px;
+        }
+        .radio-group {
+            display: flex;
+            gap: 12px;
+        }
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            cursor: pointer;
+        }
+
+        /* Estados dinámicos del botón de envío */
+        .btn-submit {
+            width: 100%;
+            padding: 10px;
+            background-color: #10b981;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 5px;
+            transition: background-color 0.2s ease;
+        }
+        .btn-submit.sending {
+            background-color: #f97316 !important;
+            cursor: not-allowed;
+        }
+        
+        #mensaje {
+            margin-top: 8px;
+            padding: 6px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 12px;
+            display: none;
+            font-weight: 600;
+        }
+        .simulacion-exito {
+            background-color: #ecfdf5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        .simulacion-error {
+            background-color: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        /* INTERFAZ CALCULADORA */
+        .calc-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+        .calc-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .calc-modal {
+            background-color: #ffffff;
+            padding: 16px;
+            border-radius: 16px 16px 0 0;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+        }
+        .calc-screen-container {
+            background-color: #f1f3f4;
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 12px;
+            min-height: 72px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .calc-history {
+            color: #70757a;
+            font-size: 13px;
+            font-family: Roboto, Arial, sans-serif;
+            min-height: 16px;
+            word-break: break-all;
+            text-align: right;
+        }
+        .calc-output {
+            color: #202124;
+            font-size: 28px;
+            font-weight: 400;
+            font-family: Roboto, Arial, sans-serif;
+            line-height: 1.2;
+        }
+        .calc-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+        .calc-btn {
+            border: 1px solid #dadce0;
+            padding: 14px 0;
+            font-size: 18px;
+            font-weight: 500;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            user-select: none;
+            outline: none;
+            font-family: Roboto, Arial, sans-serif;
+            transition: background-color 0.1s;
+        }
+        
+        .calc-btn.num {
+            background-color: #f1f3f4;
+            color: #202124;
+        }
+        .calc-btn.num:active { background-color: #e8eaed; }
+
+        .calc-btn.op {
+            background-color: #f1f3f4;
+            color: #1a73e8;
+            font-size: 20px;
+        }
+        .calc-btn.op:active { background-color: #e8eaed; }
+
+        .calc-btn.clear {
+            background-color: #f1f3f4;
+            color: #d93025;
+            font-weight: 600;
+        }
+        .calc-btn.clear:active { background-color: #e8eaed; }
+
+        .calc-btn.equals {
+            background-color: #1a73e8;
+            color: #ffffff;
+            border-color: #1a73e8;
+            font-weight: 700;
+        }
+        .calc-btn.equals:active { background-color: #155cb4; }
+
+        .calc-btn.empty {
+            visibility: hidden;
+            pointer-events: none;
+            border: none;
+        }
+
+        .calc-btn.done {
+            background-color: #10b981;
+            color: #ffffff;
+            border-color: #10b981;
+            grid-column: span 4;
+            font-size: 15px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 14px 0;
+            margin-top: 4px;
+        }
+        .calc-btn.done:active { background-color: #059669; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Registro de gastos 2026</h2>
+    
+    <form id="formularioGastos">
+        
+        <div class="form-group">
+            <label for="gasto">Gasto ($ en pesos)</label>
+            <input type="text" id="gasto" placeholder="0.00 (Toca para calcular)" readonly required style="caret-color: transparent; cursor: pointer; background-color: #edf2f7; font-weight:700; font-size:16px; color:#1e293b;">
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="periodo">Periodo</label>
+                <select id="periodo" required></select>
+            </div>
+            <div class="form-group">
+                <label for="fecha">Fecha</label>
+                <input type="date" id="fecha" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Categoría</label>
+            <div class="categorias-grid" id="contenedorCategorias">
+                <div class="btn-categoria" data-value="Pacto">Pacto</div>
+                <div class="btn-categoria" data-value="Casa">Casa</div>
+                <div class="btn-categoria" data-value="Rentas">Rentas</div>
+                <div class="btn-categoria" data-value="Personal">Personal</div>
+                <div class="btn-categoria" data-value="Hijos">Hijos</div>
+                <div class="btn-categoria" data-value="Familiares">Familiares</div>
+                <div class="btn-categoria" data-value="Cuentas">Cuentas</div>
+                <div class="btn-categoria" data-value="Autos">Autos</div>
+                <div class="btn-categoria" data-value="Mascotas">Mascotas</div>
+            </div>
+            <input type="hidden" id="categoriaSeleccionada" required>
+        </div>
+
+        <div class="form-group">
+            <label>Concepto</label>
+            <div class="conceptos-container" id="contenedorConceptos">
+                <div class="btn-concepto disabled">-- Elige primero una categoría --</div>
+            </div>
+            <input type="hidden" id="conceptoSeleccionado" required>
+        </div>
+
+        <div class="form-group">
+            <label>Cuenta</label>
+            <div class="btn-group-toggle-cuenta" id="grupoCuenta">
+                <div class="btn-toggle" data-value="NB">NB</div>
+                <div class="btn-toggle" data-value="EF">EF</div>
+                <div class="btn-toggle" data-value="VE">VE</div>
+                <div class="btn-toggle" data-value="ST">ST</div>
+                <div class="btn-toggle" data-value="NU">NU</div>
+                <div class="btn-toggle" data-value="MP">MP</div>
+                <div class="btn-toggle" data-value="DD">DD</div>
+            </div>
+            <input type="hidden" id="cuentaSeleccionada" required>
+        </div>
+
+        <div class="form-group">
+            <label for="comentarios">Comentarios</label>
+            <textarea id="comentarios" placeholder="Notas opcionales..."></textarea>
+        </div>
+
+        <div class="radio-container">
+            <label style="margin-bottom:0; font-size:12px;">¿Registrar apartado?</label>
+            <div class="radio-group">
+                <label class="radio-option">
+                    <input type="radio" name="registrarApartado" value="No" checked> No
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="registrarApartado" value="Sí"> Sí
+                </label>
+            </div>
+        </div>
+
+        <div class="seccion-apartado" id="seccionApartado">
+            <div class="form-group">
+                <label for="apartado">Apartado</label>
+                <select id="apartado">
+                    <option value="">-- Selecciona Apartado --</option>
+                    <option value="Agua">Agua</option>
+                    <option value="Ahorro">Ahorro</option>
+                    <option value="Ahorro Pablito">Ahorro Pablito</option>
+                    <option value="Ahorro Rikis">Ahorro Rikis</option>
+                    <option value="Alimento Nena">Alimento Nena</option>
+                    <option value="Apoyo hermanas">Apoyo hermanas</option>
+                    <option value="Bebbia">Bebbia</option>
+                    <option value="Beca Pablito">Beca Pablito</option>
+                    <option value="Cetina Rikis">Cetina Rikis</option>
+                    <option value="Cripto monedas">Cripto monedas</option>
+                    <option value="Diezmo Pablito">Diezmo Pablito</option>
+                    <option value="Diezmo Rikis">Diezmo Rikis</option>
+                    <option value="Escuela">Escuela</option>
+                    <option value="Gas">Gas</option>
+                    <option value="Mantenimiento">Mantenimiento</option>
+                    <option value="Pago LikeU">Pago LikeU</option>
+                    <option value="Pago MP">Pago MP</option>
+                    <option value="Personal y Hogar">Personal y Hogar</option>
+                    <option value="Prima Seguro">Prima Seguro</option>
+                    <option value="Ropa & accesorios niños">Ropa & accesorios niños</option>
+                    <option value="Ropa & accesorios papás">Ropa & accesorios papás</option>
+                    <option value="Servicios/Refacciones">Servicios/Refacciones</option>
+                    <option value="Viajes">Viajes</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>Cuenta de ahorro</label>
+                <div class="btn-group-toggle-ahorro" id="grupoCuentaAhorro">
+                    <div class="btn-toggle" data-value="BC">BC</div>
+                    <div class="btn-toggle" data-value="CT">CT</div>
+                    <div class="btn-toggle" data-value="DD">DD</div>
+                    <div class="btn-toggle" data-value="EF">EF</div>
+                    <div class="btn-toggle" data-value="ET">ET</div>
+                    <div class="btn-toggle" data-value="MD">MD</div>
+                    <div class="btn-toggle" data-value="MP">MP</div>
+                    <div class="btn-toggle" data-value="NB">NB</div>
+                    <div class="btn-toggle" data-value="NU">NU</div>
+                    <div class="btn-toggle" data-value="ST">ST</div>
+                    <div class="btn-toggle" data-value="OP">OP</div>
+                    <div class="btn-toggle" data-value="RV">RV</div>
+                </div>
+                <input type="hidden" id="cuentaAhorroSeleccionada">
+            </div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="btnRegistrar">Registrar Gasto</button>
+    </form>
+
+    <div id="mensaje"></div>
+</div>
+
+<div class="calc-overlay" id="calcOverlay">
+    <div class="calc-modal">
+        <div class="calc-screen-container">
+            <div class="calc-history" id="calcHistory"></div>
+            <div class="calc-output" id="calcOutput">0</div>
+        </div>
+        
+        <div class="calc-grid">
+            <div class="calc-btn clear" onclick="pressAC()">AC</div>
+            <div class="calc-btn clear" onclick="pressBackspace()">⌫</div>
+            <div class="calc-btn op" onclick="pressPercent()">%</div>
+            <div class="calc-btn op" onclick="pressOp('/')">÷</div>
+            
+            <div class="calc-btn num" onclick="pressNum('7')">7</div>
+            <div class="calc-btn num" onclick="pressNum('8')">8</div>
+            <div class="calc-btn num" onclick="pressNum('9')">9</div>
+            <div class="calc-btn op" onclick="pressOp('*')">×</div>
+            
+            <div class="calc-btn num" onclick="pressNum('4')">4</div>
+            <div class="calc-btn num" onclick="pressNum('5')">5</div>
+            <div class="calc-btn num" onclick="pressNum('6')">6</div>
+            <div class="calc-btn op" onclick="pressOp('-')">−</div>
+            
+            <div class="calc-btn num" onclick="pressNum('1')">1</div>
+            <div class="calc-btn num" onclick="pressNum('2')">2</div>
+            <div class="calc-btn num" onclick="pressNum('3')">3</div>
+            <div class="calc-btn op" onclick="pressOp('+')">+</div>
+            
+            <div class="calc-btn empty"></div>
+            <div class="calc-btn num" onclick="pressNum('0')">0</div>
+            <div class="calc-btn num" onclick="pressNum('.')">.</div>
+            <div class="calc-btn equals" onclick="pressEquals()">=</div>
+            
+            <div class="calc-btn done" onclick="closeCalc()">Aceptar</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // URL Final Configurada con tu Google Apps Script de Producción
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzRvv34XfLyIfxy4tnE-zCZqxpLPlWAx_-VxO2D__KWCAlrMBgECetdfwqXGRv-JPxHtQ/exec";
+
+    const rangosPeriodos = [
+        { id: 1, inicio: '2026-01-09', fin: '2026-01-22' },
+        { id: 2, inicio: '2026-01-23', fin: '2026-02-05' },
+        { id: 3, inicio: '2026-02-06', fin: '2026-02-19' },
+        { id: 4, inicio: '2026-02-20', fin: '2026-03-05' },
+        { id: 5, inicio: '2026-03-06', fin: '2026-03-19' },
+        { id: 6, inicio: '2026-03-20', fin: '2026-04-02' },
+        { id: 7, inicio: '2026-04-03', fin: '2026-04-16' },
+        { id: 8, inicio: '2026-04-17', fin: '2026-04-30' },
+        { id: 9, inicio: '2026-04-30', fin: '2026-05-13' },
+        { id: 10, inicio: '2026-05-14', fin: '2026-05-27' },
+        { id: 11, inicio: '2026-05-28', fin: '2026-06-10' },
+        { id: 12, inicio: '2026-06-11', fin: '2026-06-24' },
+        { id: 13, inicio: '2026-06-25', fin: '2026-07-08' },
+        { id: 14, inicio: '2026-07-09', fin: '2026-07-22' },
+        { id: 15, inicio: '2026-07-23', fin: '2026-08-05' },
+        { id: 16, inicio: '2026-08-06', fin: '2026-08-19' },
+        { id: 17, inicio: '2026-08-20', fin: '2026-09-02' },
+        { id: 18, inicio: '2026-09-03', fin: '2026-09-16' },
+        { id: 19, inicio: '2026-09-17', fin: '2026-09-30' },
+        { id: 20, inicio: '2026-10-01', fin: '2026-10-14' },
+        { id: 21, inicio: '2026-10-15', fin: '2026-10-28' },
+        { id: 22, login: '2026-10-29', fin: '2026-11-11' },
+        { id: 23, inicio: '2026-11-12', fin: '2026-11-25' },
+        { id: 24, inicio: '2026-11-26', fin: '2026-12-09' },
+        { id: 25, inicio: '2026-12-10', fin: '2026-12-23' },
+        { id: 26, inicio: '2026-12-24', fin: '2027-01-06' }
+    ];
+
+    function obtenerPeriodoPorFecha(fechaObj) {
+        const target = new Date(fechaObj.getFullYear(), fechaObj.getMonth(), fechaObj.getDate()).getTime();
+        for (let p of rangosPeriodos) {
+            if(!p.inicio) continue;
+            let [pAnoI, pMesI, pDiaI] = p.inicio.split('-').map(Number);
+            let [pAnoF, pMesF, pDiaF] = p.fin.split('-').map(Number);
+            let dateInicio = new Date(pAnoI, pMesI - 1, pDiaI).getTime();
+            let dateFin = new Date(pAnoF, pMesF - 1, pDiaF).getTime();
+            if (target >= dateInicio && target <= dateFin) return p.id.toString();
+        }
+        return "1";
+    }
+
+    const estructuraGastos = {
+        "Pacto": {
+            default: "Diezmo Salario",
+            options: ["Diezmo Salario", "Diezmo Despensa", "Ofrenda Ive S1", "Ofrenda Ive S2", "Ofrenda Rico S1", "Ofrenda Rico S2", "Ofrenda Hijos S1", "Ofrenda Hijos S2", "Desayuno S1", "Desayuno S2", "Diezmo extra", "Ofrenda extra", "Cooperación", "Apoyo hermanas", "Talento", "Viajes", "Ofrenda Terreno"]
+        },
+        "Casa": {
+            default: "Personal y Hogar",
+            options: ["Gasto Sem 1", "Gasto Sem 2", "Personal y Hogar", "Luz", "Agua", "Mantenimiento", "Gas", "Predial & Limpia", "Arreglos", "Muebles/Accesorios", "Bebbia", "Propiedades"]
+        },
+        "Rentas": {
+            default: "Teléfono",
+            options: ["Teléfono", "Plan familiar Google", "Streaming", "Almacenamiento"]
+        },
+        "Personal": {
+            default: "Semana Ive S1",
+            options: ["Semana Ive S1", "Semana Ive S2", "Semana Rico S1", "Semana Rico S2", "Cel Ive", "Cel Rico", "Médico y/o Medicina", "Diversión", "Ropa & Accesorios", "Comida", "Cursos", "Transporte", "Viajes"]
+        },
+        "Hijos": {
+            default: "Semana Hijos S1",
+            options: ["Semana Hijos S1", "Semana Hijos S2", "Beca Rikis", "Beca Pablito", "Escuela", "Cursos", "Médico y/o Medicina", "Ropa & Accesorios", "Diezmo Rikis", "Diezmo Pablito", "Juguetes/Regalos", "Cumpleaños"]
+        },
+        "Familiares": {
+            default: "Papás Ive",
+            options: ["Papás Ive", "Papás Rico", "Hermanos", "Sobrinos"]
+        },
+        "Cuentas": {
+            default: "Ahorro",
+            options: ["Ahorro", "Ajuste de cuentas", "Prestamos", "TDC MP", "TDC LikeU"]
+        },
+        "Autos": {
+            default: "Gasolina Auto",
+            options: ["Gasolina Auto", "Control Vehicular", "Lavado", "Pago Auto", "Prima Seguro", "Refacciones/Accesorios", "Servicio", "Verificacion"]
+        },
+        "Mascotas": {
+            default: "Alimento",
+            options: ["Accesorios", "Alimento", "Veterinario/Medicinas"]
+        }
+    };
+
+    const periodoSelect = document.getElementById('periodo');
+    const contenedorCategorias = document.getElementById('contenedorCategorias');
+    const categoriaHidden = document.getElementById('categoriaSeleccionada');
+    const contenedorConceptos = document.getElementById('contenedorConceptos');
+    const conceptoHidden = document.getElementById('conceptoSeleccionado');
+    const fechaInput = document.getElementById('fecha');
+    const formulario = document.getElementById('formularioGastos');
+    const mensajeDiv = document.getElementById('mensaje');
+    const radioApartado = document.getElementsByName('registrarApartado');
+    const seccionApartado = document.getElementById('seccionApartado');
+    const apartadoSelect = document.getElementById('apartado');
+    const cuentaAhorroHidden = document.getElementById('cuentaAhorroSeleccionada');
+    const gastoInput = document.getElementById('gasto');
+    const btnRegistrar = document.getElementById('btnRegistrar');
+
+    const hoy = new Date();
+    fechaInput.valueAsDate = hoy;
+    const periodoInicialDefault = obtenerPeriodoPorFecha(hoy);
+
+    for (let i = 1; i <= 26; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.innerText = i;
+        if (i === parseInt(periodoInicialDefault)) opt.selected = true;
+        periodoSelect.appendChild(opt);
+    }
+
+    fechaInput.addEventListener('change', function() {
+        if (this.value) {
+            const partes = this.value.split('-');
+            const fechaElegida = new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
+            periodoSelect.value = obtenerPeriodoPorFecha(fechaElegida);
+        }
+    });
+
+    function actualizarConceptos(cat) {
+        contenedorConceptos.innerHTML = '';
+        conceptoHidden.value = '';
+
+        if (cat && estructuraGastos[cat]) {
+            const infoCat = estructuraGastos[cat];
+            infoCat.options.forEach(function(concepto) {
+                const btn = document.createElement('div');
+                btn.className = 'btn-concepto';
+                btn.innerText = concepto;
+                
+                if (concepto === infoCat.default) {
+                    btn.classList.add('active');
+                    conceptoHidden.value = concepto;
+                }
+
+                btn.addEventListener('click', function() {
+                    const hermanos = contenedorConceptos.querySelectorAll('.btn-concepto');
+                    hermanos.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    conceptoHidden.value = concepto;
+                });
+
+                contenedorConceptos.appendChild(btn);
+            });
+        } else {
+            contenedorConceptos.innerHTML = '<div class="btn-concepto disabled">-- Elige primero una categoría --</div>';
+        }
+    }
+
+    const botonesCategoria = contenedorCategorias.querySelectorAll('.btn-categoria');
+    botonesCategoria.forEach(btn => {
+        btn.addEventListener('click', function() {
+            botonesCategoria.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            const valorCat = this.getAttribute('data-value');
+            categoriaHidden.value = valorCat;
+            actualizarConceptos(valorCat);
+        });
+    });
+
+    function configurarBotonesToggle(idContenedor, idHidden) {
+        const contenedor = document.getElementById(idContenedor);
+        const hiddenInput = document.getElementById(idHidden);
+        const botones = contenedor.querySelectorAll('.btn-toggle');
+        botones.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const hermanos = contenedor.querySelectorAll('.btn-toggle');
+                hermanos.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                hiddenInput.value = this.getAttribute('data-value');
+            });
+        });
+    }
+    configurarBotonesToggle('grupoCuenta', 'cuentaSeleccionada');
+    configurarBotonesToggle('grupoCuentaAhorro', 'cuentaAhorroSeleccionada');
+
+    radioApartado.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'Sí') {
+                seccionApartado.style.display = 'block';
+                apartadoSelect.required = true;
+                cuentaAhorroHidden.required = true;
+            } else {
+                seccionApartado.style.display = 'none';
+                apartadoSelect.required = false;
+                cuentaAhorroHidden.required = false;
+                apartadoSelect.value = '';
+                cuentaAhorroHidden.value = '';
+                document.getElementById('grupoCuentaAhorro').querySelectorAll('.btn-toggle').forEach(b => b.classList.remove('active'));
+            }
+        });
+    });
+
+    // CALCULADORA INTEGRADA
+    const calcOverlay = document.getElementById('calcOverlay');
+    const calcHistory = document.getElementById('calcHistory');
+    const calcOutput = document.getElementById('calcOutput');
+    let currentInput = "0"; 
+    let expression = "";    
+    let isEvaluated = false;
+
+    gastoInput.addEventListener('click', function() {
+        let valActual = gastoInput.value || "0";
+        currentInput = valActual === "0" ? "0" : valActual;
+        expression = valActual === "0" ? "" : valActual;
+        calcHistory.innerText = "";
+        calcOutput.innerText = currentInput;
+        calcOverlay.classList.add('active');
+    });
+
+    window.pressNum = function(num) {
+        if (isEvaluated) {
+            currentInput = "";
+            expression = "";
+            isEvaluated = false;
+        }
+        if (currentInput === "0" && num !== ".") {
+            currentInput = num;
+        } else {
+            if (num === "." && currentInput.includes(".")) return;
+            currentInput += num;
+        }
+        expression += num;
+        calcOutput.innerText = currentInput;
+    };
+
+    window.pressOp = function(op) {
+        isEvaluated = false;
+        if (expression === "") expression = currentInput === "0" ? "0" : currentInput;
+        const lastChar = expression.trim().slice(-1);
+        if (["+", "-", "*", "/"].includes(lastChar)) expression = expression.trim().slice(0, -1);
+        expression = expression.trim() + " " + op + " ";
+        calcHistory.innerText = expression.replace(/\*/g, "×").replace(/\//g, "÷");
+        currentInput = "0";
+    };
+
+    window.pressAC = function() {
+        currentInput = "0";
+        expression = "";
+        calcHistory.innerText = "";
+        calcOutput.innerText = "0";
+        isEvaluated = false;
+    };
+
+    window.pressBackspace = function() {
+        if (isEvaluated) {
+            calcHistory.innerText = "";
+            isEvaluated = false;
+            return;
+        }
+        if (currentInput.length > 1) {
+            currentInput = currentInput.slice(0, -1);
+            expression = expression.trim().slice(0, -1);
+        } else {
+            currentInput = "0";
+            if(expression.length > 0) expression = expression.trim().slice(0, -1);
+        }
+        calcOutput.innerText = currentInput;
+    };
+
+    window.pressPercent = function() {
+        if (currentInput === "0" || expression === "") return;
+        let tokens = expression.trim().split(" ");
+        if (tokens.length >= 3) {
+            let baseValue = parseFloat(tokens[tokens.length - 3]);
+            let operator = tokens[tokens.length - 2];
+            let percentModifier = parseFloat(currentInput);
+            if (!isNaN(baseValue) && ["+", "-"].includes(operator)) {
+                let realPercentValue = baseValue * (percentModifier / 100);
+                let lengthToRemove = currentInput.length;
+                expression = expression.slice(0, expression.length - lengthToRemove) + realPercentValue.toString();
+                calcHistory.innerText = tokens.slice(0, -1).join(" ").replace(/\*/g, "×").replace(/\//g, "÷") + " " + percentModifier + "%";
+                currentInput = realPercentValue.toString();
+                calcOutput.innerText = percentModifier + "%";
+                return;
+            }
+        }
+        try {
+            let val = parseFloat(currentInput) / 100;
+            let lengthToRemove = currentInput.length;
+            expression = expression.slice(0, expression.length - lengthToRemove) + val.toString();
+            currentInput = val.toString();
+            calcOutput.innerText = currentInput;
+        } catch (e) {
+            calcOutput.innerText = "Error";
+        }
+    };
+
+    window.pressEquals = function() {
+        if (expression === "") return;
+        if (!calcHistory.innerText.includes("%")) {
+            calcHistory.innerText = expression.replace(/\*/g, "×").replace(/\//g, "÷") + " =";
+        } else {
+            calcHistory.innerText += " =";
+        }
+        try {
+            let result = eval(expression);
+            if (result !== undefined) {
+                result = Math.round(result * 100) / 100;
+                currentInput = result.toString();
+                expression = currentInput; 
+                calcOutput.innerText = currentInput;
+                isEvaluated = true;
+            }
+        } catch (e) {
+            calcOutput.innerText = "Error";
+            currentInput = "0";
+            expression = "";
+        }
+    };
+
+    window.closeCalc = function() {
+        if (!isEvaluated && expression !== "") pressEquals();
+        gastoInput.value = currentInput || "0";
+        calcOverlay.classList.remove('active');
+    };
+
+    calcOverlay.addEventListener('click', function(e) {
+        if (e.target === calcOverlay) closeCalc();
+    });
+
+    // LOGICA DE REINTENTOS PARA ENVÍO SEGURO
+    async function enviarConReintentos(url, datos, reintentosMaximos = 3) {
+        for (let i = 0; i < reintentosMaximos; i++) {
+            try {
+                const respuesta = await fetch(url, {
+                    method: 'POST',
+                    mode: 'no-cors', 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datos)
+                });
+                return true; 
+            } catch (error) {
+                console.warn(`Intento ${i + 1} fallido. Reintentando...`, error);
+                if (i === reintentosMaximos - 1) throw error; 
+            }
+        }
+    }
+
+    formulario.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const categoriaFinal = categoriaHidden.value;
+        if (!categoriaFinal) { alert('Por favor, selecciona una Categoría.'); return; }
+        const conceptoFinal = conceptoHidden.value;
+        if (!conceptoFinal) { alert('Por favor, selecciona un Concepto.'); return; }
+        const cuentaPrincipal = document.getElementById('cuentaSeleccionada').value;
+        if (!cuentaPrincipal) { alert('Por favor, selecciona una Cuenta.'); return; }
+        const mnt = parseFloat(gastoInput.value);
+        if (isNaN(mnt) || mnt <= 0) { alert('Por favor, ingresa un monto de Gasto válido.'); return; }
+
+        const registrarAp = document.querySelector('input[name="registrarApartado"]:checked').value;
+        const datos = {
+            gasto: mnt,
+            periodo: periodoSelect.value,
+            fecha: fechaInput.value,
+            categoria: categoriaFinal,
+            concepto: conceptoFinal,
+            cuenta: cuentaPrincipal,
+            comentarios: document.getElementById('comentarios').value,
+            registrar_apartado: registrarAp,
+            apartado: registrarAp === 'Sí' ? apartadoSelect.value : 'N/A',
+            cuenta_ahorro: registrarAp === 'Sí' ? cuentaAhorroHidden.value : 'N/A'
+        };
+
+        // Estado "Enviando..." en color Naranja
+        btnRegistrar.classList.add('sending');
+        btnRegistrar.innerText = "Enviando";
+        btnRegistrar.disabled = true;
+        mensajeDiv.style.display = "none";
+
+        try {
+            // Ejecución de guardado con la validación de 3 reintentos
+            await enviarConReintentos(WEB_APP_URL, datos, 3);
+            
+            // ÉXITO: Regresar botón a verde
+            btnRegistrar.classList.remove('sending');
+            btnRegistrar.innerText = "Registrar gasto";
+            btnRegistrar.disabled = false;
+
+            mensajeDiv.className = "simulacion-exito";
+            mensajeDiv.innerHTML = `<strong>¡Guardado con éxito!</strong> Informacion enviada a la pestaña Gastos.`;
+            mensajeDiv.style.display = "block";
+
+            // LIMPIAR CAMPOS E INICIAR NUEVA CAPTURA
+            formulario.reset();
+            const resetHoy = new Date();
+            fechaInput.valueAsDate = resetHoy;
+            periodoSelect.value = obtenerPeriodoPorFecha(resetHoy);
+            
+            botonesCategoria.forEach(b => b.classList.remove('active'));
+            categoriaHidden.value = '';
+            contenedorConceptos.innerHTML = '<div class="btn-concepto disabled">-- Elige primero una categoría --</div>';
+            conceptoHidden.value = '';
+            document.getElementById('cuentaSeleccionada').value = '';
+            cuentaAhorroHidden.value = '';
+            document.querySelectorAll('.btn-toggle').forEach(b => b.classList.remove('active'));
+            seccionApartado.style.display = 'none';
+
+            setTimeout(() => { mensajeDiv.style.display = "none"; }, 4000);
+
+        } catch (err) {
+            // ERROR: Conservar información capturada, botón vuelve a verde y muestra leyenda por 3 segundos
+            console.error("Error definitivo tras 3 intentos:", err);
+            btnRegistrar.classList.remove('sending');
+            btnRegistrar.innerText = "Registrar gasto";
+            btnRegistrar.disabled = false;
+
+            mensajeDiv.className = "simulacion-error";
+            mensajeDiv.innerText = "No se pudo guardar la información, intenta nuevamente";
+            mensajeDiv.style.display = "block";
+
+            setTimeout(() => { mensajeDiv.style.display = "none"; }, 3000);
+        }
+    });
+</script>
+
+</body>
+</html>
