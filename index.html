@@ -635,8 +635,13 @@
     const gastoInput = document.getElementById('gasto');
     const btnRegistrar = document.getElementById('btnRegistrar');
 
+    // CÓDIGO CORREGIDO PARA FECHA:
     const hoy = new Date();
-    fechaInput.valueAsDate = hoy;
+    const ano = hoy.getFullYear();
+    const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoy.getDate()).padStart(2, '0');
+    fechaInput.value = `${ano}-${mes}-${dia}`;
+    
     const periodoInicialDefault = obtenerPeriodoPorFecha(hoy);
 
     for (let i = 1; i <= 26; i++) {
@@ -922,8 +927,16 @@
 
             // LIMPIAR CAMPOS E INICIAR NUEVA CAPTURA
             formulario.reset();
+            
+            //const resetHoy = new Date();
+            //fechaInput.valueAsDate = resetHoy;
+            //periodoSelect.value = obtenerPeriodoPorFecha(resetHoy);
+            // CÓDIGO CORREGIDO fecha correcta:
             const resetHoy = new Date();
-            fechaInput.valueAsDate = resetHoy;
+            const rAno = resetHoy.getFullYear();
+            const rMes = String(resetHoy.getMonth() + 1).padStart(2, '0');
+            const rDia = String(resetHoy.getDate()).padStart(2, '0');
+            fechaInput.value = `${rAno}-${rMes}-${rDia}`;
             periodoSelect.value = obtenerPeriodoPorFecha(resetHoy);
             
             botonesCategoria.forEach(b => b.classList.remove('active'));
