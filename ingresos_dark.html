@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Ingresos 2026</title>
+    <style>
+        :root {
+            --bg-body: #f0f4f8;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-title: #1e293b;
+            --text-label: #475569;
+            --border-input: #cbd5e1;
+            --bg-input: #f8fafc;
+            --bg-input-focus: #ffffff;
+            --bg-btn-toggle: #f1f5f9;
+            --text-btn-toggle: #475569;
+            --shadow-card: rgba(0, 0, 0, 0.06);
+        }
+
+        body.dark-mode {
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f8fafc;
+            --text-title: #f1f5f9;
+            --text-label: #94a3b8;
+            --border-input: #334155;
+            --bg-input: #0f172a;
+            --bg-input-focus: #1e293b;
+            --bg-btn-toggle: #334155;
+            --text-btn-toggle: #cbd5e1;
+            --shadow-card: rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 8px;
+        }
+
+        .container {
+            background-color: var(--bg-card);
+            width: 100%;
+            max-width: 440px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px var(--shadow-card);
+            position: relative;
+        }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            color: var(--text-title);
+            font-weight: 700;
+            font-size: 16px;
+            margin: 0;
+        }
+
+        .theme-toggle-btn {
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 50%;
+            line-height: 1;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .form-group {
+            margin-bottom: 8px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 2px;
+            color: var(--text-label);
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 7px 9px;
+            border: 1.5px solid var(--border-input);
+            border-radius: 6px;
+            font-size: 14px;
+            color: var(--text-main);
+            background-color: var(--bg-input);
+            color-scheme: light;
+            -webkit-appearance: none;
+        }
+
+        body.dark-mode input, 
+        body.dark-mode select, 
+        body.dark-mode textarea {
+            color-scheme: dark;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background-color: var(--bg-input-focus);
+        }
+
+        #ingreso {
+            background-color: var(--bg-input) !important;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--text-main) !important;
+        }
+
+        textarea {
+            resize: none;
+            height: 38px;
+            font-size: 13px;
+        }
+
+        .btn-group-toggle-cuenta {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+
+        .btn-toggle {
+            padding: 6px 0;
+            background-color: var(--bg-btn-toggle);
+            border: 1px solid var(--border-input);
+            border-radius: 6px;
+            color: var(--text-btn-toggle);
+            font-size: 11px;
+            font-weight: 700;
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .btn-toggle.active {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+            color: #ffffff;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 10px;
+            background-color: #10b981;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 6px;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn-submit.sending {
+            background-color: #f97316 !important;
+            cursor: not-allowed;
+        }
+
+        #mensaje {
+            margin-top: 8px;
+            padding: 6px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 12px;
+            display: none;
+            font-weight: 600;
+        }
+
+        .simulacion-exito {
+            background-color: #ecfdf5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        body.dark-mode .simulacion-exito {
+            background-color: #064e3b;
+            color: #a7f3d0;
+            border-color: #059669;
+        }
+
+        .simulacion-error {
+            background-color: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        body.dark-mode .simulacion-error {
+            background-color: #7f1d1d;
+            color: #fecaca;
+            border-color: #dc2626;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-row">
+        <h2>Registro de Ingresos 2026</h2>
+        <button type="button" class="theme-toggle-btn" id="btnThemeToggle" title="Cambiar Tema">🌙</button>
+    </div>
+    
+    <form id="formularioIngresos">
+        
+        <div class="form-group">
+            <label for="ingreso">Ingreso ($ en pesos)</label>
+            <input type="number" id="ingreso" step="0.01" min="0.01" placeholder="0.00" required>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="periodo">Periodo</label>
+                <select id="periodo" required></select>
+            </div>
+            <div class="form-group">
+                <label for="fecha">Fecha</label>
+                <input type="date" id="fecha" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Cuenta</label>
+            <div class="btn-group-toggle-cuenta" id="grupoCuenta">
+                <div class="btn-toggle" data-value="NB">NB</div>
+                <div class="btn-toggle" data-value="EF">EF</div>
+                <div class="btn-toggle" data-value="VE">VE</div>
+                <div class="btn-toggle" data-value="ST">ST</div>
+                <div class="btn-toggle" data-value="NU">NU</div>
+                <div class="btn-toggle" data-value="MP">MP</div>
+                <div class="btn-toggle" data-value="DD">DD</div>
+            </div>
+            <input type="hidden" id="cuentaSeleccionada" required>
+        </div>
+
+        <div class="form-group">
+            <label for="nota">Nota</label>
+            <textarea id="nota" placeholder="Notas opcionales..."></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit" id="btnRegistrar">Registrar Ingreso</button>
+    </form>
+
+    <div id="mensaje"></div>
+</div>
+
+<script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzRvv34XfLyIfxy4tnE-zCZqxpLPlWAx_-VxO2D__KWCAlrMBgECetdfwqXGRv-JPxHtQ/exec";
+
+    // Lógica para Modo Oscuro con detección automática y persistencia
+    const btnThemeToggle = document.getElementById('btnThemeToggle');
+    const temaGuardado = localStorage.getItem('theme');
+    const prefiereOscuro = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    if (temaGuardado === 'dark' || (!temaGuardado && prefiereOscuro)) {
+        document.body.classList.add('dark-mode');
+        btnThemeToggle.innerText = '☀️';
+    } else {
+        btnThemeToggle.innerText = '🌙';
+    }
+
+    btnThemeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        const esOscuro = document.body.classList.contains('dark-mode');
+        btnThemeToggle.innerText = esOscuro ? '☀️' : '🌙';
+        localStorage.setItem('theme', esOscuro ? 'dark' : 'light');
+    });
+
+    const rangosPeriodos = [
+        { id: 1, inicio: '2026-01-09', fin: '2026-01-22' },
+        { id: 2, inicio: '2026-01-23', fin: '2026-02-05' },
+        { id: 3, inicio: '2026-02-06', fin: '2026-02-19' },
+        { id: 4, inicio: '2026-02-20', fin: '2026-03-05' },
+        { id: 5, inicio: '2026-03-06', fin: '2026-03-19' },
+        { id: 6, inicio: '2026-03-20', fin: '2026-04-02' },
+        { id: 7, inicio: '2026-04-03', fin: '2026-04-16' },
+        { id: 8, inicio: '2026-04-17', fin: '2026-04-30' },
+        { id: 9, inicio: '2026-04-30', fin: '2026-05-13' },
+        { id: 10, inicio: '2026-05-14', fin: '2026-05-27' },
+        { id: 11, inicio: '2026-05-28', fin: '2026-06-10' },
+        { id: 12, inicio: '2026-06-11', fin: '2026-06-24' },
+        { id: 13, inicio: '2026-06-25', fin: '2026-07-08' },
+        { id: 14, inicio: '2026-07-09', fin: '2026-07-22' },
+        { id: 15, inicio: '2026-07-23', fin: '2026-08-05' },
+        { id: 16, inicio: '2026-08-06', fin: '2026-08-19' },
+        { id: 17, inicio: '2026-08-20', fin: '2026-09-02' },
+        { id: 18, inicio: '2026-09-03', fin: '2026-09-16' },
+        { id: 19, inicio: '2026-09-17', fin: '2026-09-30' },
+        { id: 20, inicio: '2026-10-01', fin: '2026-10-14' },
+        { id: 21, inicio: '2026-10-15', fin: '2026-10-28' },
+        { id: 22, inicio: '2026-10-29', fin: '2026-11-11' },
+        { id: 23, inicio: '2026-11-12', fin: '2026-11-25' },
+        { id: 24, inicio: '2026-11-26', fin: '2026-12-09' },
+        { id: 25, inicio: '2026-12-10', fin: '2026-12-23' },
+        { id: 26, inicio: '2026-12-24', fin: '2027-01-06' }
+    ];
+
+    function obtenerPeriodoPorFecha(fechaObj) {
+        const target = new Date(fechaObj.getFullYear(), fechaObj.getMonth(), fechaObj.getDate()).getTime();
+        for (let p of rangosPeriodos) {
+            if(!p.inicio) continue;
+            let [pAnoI, pMesI, pDiaI] = p.inicio.split('-').map(Number);
+            let [pAnoF, pMesF, pDiaF] = p.fin.split('-').map(Number);
+            let dateInicio = new Date(pAnoI, pMesI - 1, pDiaI).getTime();
+            let dateFin = new Date(pAnoF, pMesF - 1, pDiaF).getTime();
+            if (target >= dateInicio && target <= dateFin) return p.id.toString();
+        }
+        return "1";
+    }
+
+    const periodoSelect = document.getElementById('periodo');
+    const fechaInput = document.getElementById('fecha');
+    const formulario = document.getElementById('formularioIngresos');
+    const mensajeDiv = document.getElementById('mensaje');
+    const ingresoInput = document.getElementById('ingreso');
+    const btnRegistrar = document.getElementById('btnRegistrar');
+    const cuentaHidden = document.getElementById('cuentaSeleccionada');
+
+    function establecerFechaLocal(inputElem) {
+        const hoy = new Date();
+        const ano = hoy.getFullYear();
+        const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+        const dia = String(hoy.getDate()).padStart(2, '0');
+        inputElem.value = `${ano}-${mes}-${dia}`;
+        return hoy;
+    }
+
+    const fechaActual = establecerFechaLocal(fechaInput);
+    const periodoInicialDefault = obtenerPeriodoPorFecha(fechaActual);
+
+    for (let i = 1; i <= 26; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.innerText = i;
+        if (i === parseInt(periodoInicialDefault)) opt.selected = true;
+        periodoSelect.appendChild(opt);
+    }
+
+    fechaInput.addEventListener('change', function() {
+        if (this.value) {
+            const partes = this.value.split('-');
+            const fechaElegida = new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
+            periodoSelect.value = obtenerPeriodoPorFecha(fechaElegida);
+        }
+    });
+
+    const botonesCuenta = document.getElementById('grupoCuenta').querySelectorAll('.btn-toggle');
+    botonesCuenta.forEach(btn => {
+        btn.addEventListener('click', function() {
+            botonesCuenta.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            cuentaHidden.value = this.getAttribute('data-value');
+        });
+    });
+
+    async function enviarConReintentos(url, datos, reintentosMaximos = 3) {
+        for (let i = 0; i < reintentosMaximos; i++) {
+            try {
+                await fetch(url, {
+                    method: 'POST',
+                    mode: 'no-cors', 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datos)
+                });
+                return true; 
+            } catch (error) {
+                console.warn(`Intento ${i + 1} fallido. Reintentando...`, error);
+                if (i === reintentosMaximos - 1) throw error; 
+            }
+        }
+    }
+
+    formulario.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const mnt = parseFloat(ingresoInput.value);
+        if (isNaN(mnt) || mnt <= 0) { alert('Por favor, ingresa un monto de Ingreso válido.'); return; }
+        if (!cuentaHidden.value) { alert('Por favor, selecciona una Cuenta.'); return; }
+
+        const datos = {
+            tipoFormulario: "Ingresos",
+            ingreso: mnt,
+            periodo: periodoSelect.value,
+            fecha: fechaInput.value,
+            cuenta: cuentaHidden.value,
+            nota: document.getElementById('nota').value
+        };
+
+        btnRegistrar.classList.add('sending');
+        btnRegistrar.innerText = "Enviando";
+        btnRegistrar.disabled = true;
+        mensajeDiv.style.display = "none";
+
+        try {
+            await enviarConReintentos(WEB_APP_URL, datos, 3);
+            
+            btnRegistrar.classList.remove('sending');
+            btnRegistrar.innerText = "Registrar Ingreso";
+            btnRegistrar.disabled = false;
+
+            mensajeDiv.className = "simulacion-exito";
+            mensajeDiv.innerHTML = `<strong>¡Guardado con éxito!</strong> Información enviada a la pestaña Ingresos.`;
+            mensajeDiv.style.display = "block";
+
+            formulario.reset();
+            
+            const resetHoy = establecerFechaLocal(fechaInput);
+            periodoSelect.value = obtenerPeriodoPorFecha(resetHoy);
+            cuentaHidden.value = '';
+            botonesCuenta.forEach(b => b.classList.remove('active'));
+
+            setTimeout(() => { mensajeDiv.style.display = "none"; }, 4000);
+
+        } catch (err) {
+            console.error("Error definitivo tras 3 intentos:", err);
+            btnRegistrar.classList.remove('sending');
+            btnRegistrar.innerText = "Registrar Ingreso";
+            btnRegistrar.disabled = false;
+
+            mensajeDiv.className = "simulacion-error";
+            mensajeDiv.innerText = "No se pudo guardar la información, intenta nuevamente";
+            mensajeDiv.style.display = "block";
+
+            setTimeout(() => { mensajeDiv.style.display = "none"; }, 3000);
+        }
+    });
+</script>
+
+</body>
+</html>
