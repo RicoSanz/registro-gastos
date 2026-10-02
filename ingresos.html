@@ -5,92 +5,164 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro de Ingresos 2026</title>
     <style>
+        :root {
+            --bg-body: #f0f4f8;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-title: #1e293b;
+            --text-label: #475569;
+            --border-input: #cbd5e1;
+            --bg-input: #f8fafc;
+            --bg-input-focus: #ffffff;
+            --bg-btn-toggle: #f1f5f9;
+            --text-btn-toggle: #475569;
+            --shadow-card: rgba(0, 0, 0, 0.06);
+        }
+
+        body.dark-mode {
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f8fafc;
+            --text-title: #f1f5f9;
+            --text-label: #94a3b8;
+            --border-input: #334155;
+            --bg-input: #0f172a;
+            --bg-input-focus: #1e293b;
+            --bg-btn-toggle: #334155;
+            --text-btn-toggle: #cbd5e1;
+            --shadow-card: rgba(0, 0, 0, 0.4);
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
         }
+
         body {
-            background-color: #f0f4f8;
+            background-color: var(--bg-body);
             display: flex;
             justify-content: center;
             align-items: flex-start;
             min-height: 100vh;
             padding: 8px;
         }
+
         .container {
-            background-color: #ffffff;
+            background-color: var(--bg-card);
             width: 100%;
             max-width: 440px;
             padding: 12px 14px;
             border-radius: 12px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            box-shadow: 0 2px 12px var(--shadow-card);
+            position: relative;
         }
-        h2 {
-            text-align: center;
-            color: #1e293b;
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 10px;
+        }
+
+        h2 {
+            color: var(--text-title);
             font-weight: 700;
             font-size: 16px;
+            margin: 0;
         }
+
+        .theme-toggle-btn {
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 50%;
+            line-height: 1;
+        }
+
         .form-row {
             display: flex;
             gap: 8px;
             margin-bottom: 8px;
         }
+
         .form-row .form-group {
             flex: 1;
             margin-bottom: 0;
         }
+
         .form-group {
             margin-bottom: 8px;
         }
+
         label {
             display: block;
             margin-bottom: 2px;
-            color: #475569;
+            color: var(--text-label);
             font-size: 11px;
             font-weight: 600;
         }
+
         input, select, textarea {
             width: 100%;
             padding: 7px 9px;
-            border: 1.5px solid #cbd5e1;
+            border: 1.5px solid var(--border-input);
             border-radius: 6px;
             font-size: 14px;
-            color: #0f172a;
-            background-color: #f8fafc;
+            color: var(--text-main);
+            background-color: var(--bg-input);
+            color-scheme: light;
             -webkit-appearance: none;
         }
+
+        body.dark-mode input, 
+        body.dark-mode select, 
+        body.dark-mode textarea {
+            color-scheme: dark;
+        }
+
         input:focus, select:focus, textarea:focus {
             outline: none;
             border-color: #3b82f6;
-            background-color: #ffffff;
+            background-color: var(--bg-input-focus);
         }
+
+        #ingreso {
+            background-color: var(--bg-input) !important;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--text-main) !important;
+        }
+
         textarea {
             resize: none;
             height: 38px;
             font-size: 13px;
         }
-        
+
         .btn-group-toggle-cuenta {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             gap: 4px;
         }
+
         .btn-toggle {
             padding: 6px 0;
-            background-color: #f1f5f9;
-            border: 1px solid #cbd5e1;
+            background-color: var(--bg-btn-toggle);
+            border: 1px solid var(--border-input);
             border-radius: 6px;
-            color: #475569;
+            color: var(--text-btn-toggle);
             font-size: 11px;
             font-weight: 700;
             text-align: center;
             cursor: pointer;
             user-select: none;
         }
+
         .btn-toggle.active {
             background-color: #3b82f6;
             border-color: #3b82f6;
@@ -110,11 +182,12 @@
             margin-top: 6px;
             transition: background-color 0.2s ease;
         }
+
         .btn-submit.sending {
             background-color: #f97316 !important;
             cursor: not-allowed;
         }
-        
+
         #mensaje {
             margin-top: 8px;
             padding: 6px;
@@ -124,28 +197,45 @@
             display: none;
             font-weight: 600;
         }
+
         .simulacion-exito {
             background-color: #ecfdf5;
             color: #065f46;
             border: 1px solid #a7f3d0;
         }
+
+        body.dark-mode .simulacion-exito {
+            background-color: #064e3b;
+            color: #a7f3d0;
+            border-color: #059669;
+        }
+
         .simulacion-error {
             background-color: #fef2f2;
             color: #991b1b;
             border: 1px solid #fca5a5;
+        }
+
+        body.dark-mode .simulacion-error {
+            background-color: #7f1d1d;
+            color: #fecaca;
+            border-color: #dc2626;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Registro de Ingresos 2026</h2>
+    <div class="header-row">
+        <h2>Registro de Ingresos 2026</h2>
+        <button type="button" class="theme-toggle-btn" id="btnThemeToggle" title="Cambiar Tema">🌙</button>
+    </div>
     
     <form id="formularioIngresos">
         
         <div class="form-group">
             <label for="ingreso">Ingreso ($ en pesos)</label>
-            <input type="number" id="ingreso" step="0.01" min="0.01" placeholder="0.00" required style="background-color: #edf2f7; font-weight:700; font-size:16px; color:#1e293b;">
+            <input type="number" id="ingreso" step="0.01" min="0.01" placeholder="0.00" required>
         </div>
         
         <div class="form-row">
@@ -186,6 +276,25 @@
 
 <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzRvv34XfLyIfxy4tnE-zCZqxpLPlWAx_-VxO2D__KWCAlrMBgECetdfwqXGRv-JPxHtQ/exec";
+
+    // Lógica para Modo Oscuro con detección automática y persistencia
+    const btnThemeToggle = document.getElementById('btnThemeToggle');
+    const temaGuardado = localStorage.getItem('theme');
+    const prefiereOscuro = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    if (temaGuardado === 'dark' || (!temaGuardado && prefiereOscuro)) {
+        document.body.classList.add('dark-mode');
+        btnThemeToggle.innerText = '☀️';
+    } else {
+        btnThemeToggle.innerText = '🌙';
+    }
+
+    btnThemeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        const esOscuro = document.body.classList.contains('dark-mode');
+        btnThemeToggle.innerText = esOscuro ? '☀️' : '🌙';
+        localStorage.setItem('theme', esOscuro ? 'dark' : 'light');
+    });
 
     const rangosPeriodos = [
         { id: 1, inicio: '2026-01-09', fin: '2026-01-22' },
@@ -237,7 +346,6 @@
     const btnRegistrar = document.getElementById('btnRegistrar');
     const cuentaHidden = document.getElementById('cuentaSeleccionada');
 
-    // CÁLCULO DE FECHA LOCAL CORREGIDO
     function establecerFechaLocal(inputElem) {
         const hoy = new Date();
         const ano = hoy.getFullYear();
@@ -266,7 +374,6 @@
         }
     });
 
-    // Configuración de botones de Cuenta
     const botonesCuenta = document.getElementById('grupoCuenta').querySelectorAll('.btn-toggle');
     botonesCuenta.forEach(btn => {
         btn.addEventListener('click', function() {
@@ -301,7 +408,7 @@
         if (!cuentaHidden.value) { alert('Por favor, selecciona una Cuenta.'); return; }
 
         const datos = {
-            tipoFormulario: "Ingresos", // Identificador para la Opción A
+            tipoFormulario: "Ingresos",
             ingreso: mnt,
             periodo: periodoSelect.value,
             fecha: fechaInput.value,
@@ -327,7 +434,6 @@
 
             formulario.reset();
             
-            // Restablecer estados
             const resetHoy = establecerFechaLocal(fechaInput);
             periodoSelect.value = obtenerPeriodoPorFecha(resetHoy);
             cuentaHidden.value = '';
