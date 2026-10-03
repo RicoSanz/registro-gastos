@@ -252,7 +252,7 @@
 </div>
 
 <script>
-  // Reemplaza con la URL de tu Google Apps Script desplegada
+  // Reemplaza con la URL de tu Google Apps Script desplegada que termina en /exec
   const WEB_APP_URL = "REEMPLAZAR_CON_TU_URL_DE_WEB_APP";
 
   const APARTADOS = [
@@ -265,7 +265,6 @@
   const CUENTAS = ["BC", "CT", "DD", "EF", "ET", "MD", "MP", "NB", "NU", "OP", "RV", "ST"];
   const TIPOS = ["Retiro", "Abono"];
 
-  // Estructura idéntica a tus otros formularios con rangos exactos de fechas YYYY-MM-DD
   const rangosPeriodos = [
     { id: 1, inicio: '2026-01-09', fin: '2026-01-22' },
     { id: 2, inicio: '2026-01-23', fin: '2026-02-05' },
@@ -375,14 +374,12 @@
     });
   }
 
-  // Genera la lista de periodos (1 al 26) y selecciona el ID que abarca la fecha en YYYY-MM-DD
   function generarPeriodosNumericos() {
     const select = document.getElementById("periodoSelect");
     const fechaSeleccionada = document.getElementById("fecha").value;
     
     if (!fechaSeleccionada) return;
 
-    // Buscar el periodo cuya fecha de inicio sea <= fechaSeleccionada y fin sea >= fechaSeleccionada
     let periodoEncontrado = 1;
     for (const rango of rangosPeriodos) {
       if (fechaSeleccionada >= rango.inicio && fechaSeleccionada <= rango.fin) {
@@ -391,7 +388,6 @@
       }
     }
 
-    // Llenar select solo con los números (1 a 26)
     select.innerHTML = "";
     for (let i = 1; i <= 26; i++) {
       const option = document.createElement("option");
@@ -432,10 +428,12 @@
     }
 
     const cantidadVal = parseFloat(document.getElementById("cantidad").value);
+    const fechaVal = document.getElementById("fecha").value;
 
     const payload = {
       tipoFormulario: "Ahorro",
       periodo: periodoVal,
+      fecha: fechaVal,
       apartado: selectedApartado,
       cuenta: selectedCuenta,
       tipo: selectedTipo,
@@ -453,7 +451,7 @@
     fetch(WEB_APP_URL, {
       method: "POST",
       mode: "no-cors",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(payload)
     })
     .then(() => {
@@ -470,6 +468,7 @@
       setTimeout(() => { statusDiv.innerText = ""; }, 3000);
     })
     .catch(err => {
+      console.error(err);
       statusDiv.style.color = "red";
       statusDiv.innerText = "Error al guardar. Intenta de nuevo.";
       btnGuardar.disabled = false;
