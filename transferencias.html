@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Transferencias 2026</title>
+    <style>
+        :root {
+            --bg-body: #f0f4f8;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-title: #1e293b;
+            --text-label: #475569;
+            --border-input: #cbd5e1;
+            --bg-input: #f8fafc;
+            --bg-input-focus: #ffffff;
+            --bg-btn-toggle: #f1f5f9;
+            --text-btn-toggle: #475569;
+            --shadow-card: rgba(0, 0, 0, 0.06);
+            --bg-calc-overlay: rgba(0, 0, 0, 0.4);
+            --bg-calc-modal: #ffffff;
+            --bg-calc-screen: #f1f3f4;
+            --border-calc-screen: #dadce0;
+            --text-calc-history: #70757a;
+            --text-calc-output: #202124;
+            --bg-calc-num: #f1f3f4;
+            --text-calc-num: #202124;
+            --bg-monto-input: #edf2f7;
+            --text-monto-input: #1e293b;
+        }
+
+        body.dark-mode {
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f8fafc;
+            --text-title: #f1f5f9;
+            --text-label: #94a3b8;
+            --border-input: #334155;
+            --bg-input: #0f172a;
+            --bg-input-focus: #1e293b;
+            --bg-btn-toggle: #334155;
+            --text-btn-toggle: #cbd5e1;
+            --shadow-card: rgba(0, 0, 0, 0.4);
+            --bg-calc-overlay: rgba(0, 0, 0, 0.7);
+            --bg-calc-modal: #1e293b;
+            --bg-calc-screen: #0f172a;
+            --border-calc-screen: #334155;
+            --text-calc-history: #94a3b8;
+            --text-calc-output: #f8fafc;
+            --bg-calc-num: #334155;
+            --text-calc-num: #f8fafc;
+            --bg-monto-input: #0f172a;
+            --text-monto-input: #f8fafc;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 8px;
+        }
+
+        .container {
+            background-color: var(--bg-card);
+            width: 100%;
+            max-width: 440px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px var(--shadow-card);
+            position: relative;
+        }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            color: var(--text-title);
+            font-weight: 700;
+            font-size: 16px;
+            margin: 0;
+        }
+
+        .theme-toggle-btn {
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 50%;
+            line-height: 1;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .form-group {
+            margin-bottom: 8px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 2px;
+            color: var(--text-label);
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 7px 9px;
+            border: 1.5px solid var(--border-input);
+            border-radius: 6px;
+            font-size: 14px;
+            color: var(--text-main);
+            background-color: var(--bg-input);
+            color-scheme: light;
+            -webkit-appearance: none;
+        }
+
+        body.dark-mode input, 
+        body.dark-mode select, 
+        body.dark-mode textarea {
+            color-scheme: dark;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background-color: var(--bg-input-focus);
+        }
+
+        #cantidad {
+            background-color: var(--bg-monto-input) !important;
+            color: var(--text-monto-input) !important;
+            caret-color: transparent;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        textarea {
+            resize: none;
+            height: 38px;
+            font-size: 13px;
+        }
+
+        /* Grid compacto de 7 columnas para cuentas */
+        .btn-group-toggle {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+
+        .btn-toggle {
+            padding: 6px 0;
+            background-color: var(--bg-btn-toggle);
+            border: 1px solid var(--border-input);
+            border-radius: 6px;
+            color: var(--text-btn-toggle);
+            font-size: 11px;
+            font-weight: 700;
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .btn-toggle.active-origen {
+            background-color: #ef4444;
+            border-color: #ef4444;
+            color: #ffffff;
+        }
+
+        .btn-toggle.active-destino {
+            background-color: #10b981;
+            border-color: #10b981;
+            color: #ffffff;
+        }
+
+        /* Botón de Envío */
+        .btn-submit {
+            width: 100%;
+            padding: 10px;
+            background-color: #2563eb;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 4px;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn-submit.sending {
+            background-color: #f97316 !important;
+            cursor: not-allowed;
+        }
+
+        #mensaje {
+            margin-top: 8px;
+            padding: 6px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 12px;
+            display: none;
+            font-weight: 600;
+        }
+
+        .simulacion-exito {
+            background-color: #ecfdf5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        body.dark-mode .simulacion-exito {
+            background-color: #064e3b;
+            color: #a7f3d0;
+            border-color: #059669;
+        }
+
+        .simulacion-error {
+            background-color: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        body.dark-mode .simulacion-error {
+            background-color: #7f1d1d;
+            color: #fecaca;
+            border-color: #dc2626;
+        }
+
+        /* INTERFAZ CALCULADORA */
+        .calc-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-calc-overlay);
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+
+        .calc-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .calc-modal {
+            background-color: var(--bg-calc-modal);
+            padding: 16px;
+            border-radius: 16px 16px 0 0;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .calc-screen-container {
+            background-color: var(--bg-calc-screen);
+            border: 1px solid var(--border-calc-screen);
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 12px;
+            min-height: 72px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .calc-history {
+            color: var(--text-calc-history);
+            font-size: 13px;
+            font-family: Roboto, Arial, sans-serif;
+            min-height: 16px;
+            word-break: break-all;
+            text-align: right;
+        }
+
+        .calc-output {
+            color: var(--text-calc-output);
+            font-size: 28px;
+            font-weight: 400;
+            font-family: Roboto, Arial, sans-serif;
+            line-height: 1.2;
+        }
+
+        .calc-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .calc-btn {
+            border: 1px solid var(--border-calc-screen);
+            padding: 14px 0;
+            font-size: 18px;
+            font-weight: 500;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            user-select: none;
+            outline: none;
+            font-family: Roboto, Arial, sans-serif;
+            transition: background-color 0.1s;
+        }
+
+        .calc-btn.num {
+            background-color: var(--bg-calc-num);
+            color: var(--text-calc-num);
+        }
+
+        .calc-btn.op {
+            background-color: var(--bg-calc-num);
+            color: #3b82f6;
+            font-size: 20px;
+        }
+
+        .calc-btn.clear {
+            background-color: var(--bg-calc-num);
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+        .calc-btn.equals {
+            background-color: #3b82f6;
+            color: #ffffff;
+            border-color: #3b82f6;
+            font-weight: 700;
+        }
+
+        .calc-btn.empty {
+            visibility: hidden;
+            pointer-events: none;
+            border: none;
+        }
+
+        .calc-btn.done {
+            background-color: #10b981;
+            color: #ffffff;
+            border-color: #10b981;
+            grid-column: span 4;
+            font-size: 15px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 14px 0;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-row">
+        <h2>Registro de Transferencias</h2>
+        <button type="button" class="theme-toggle-btn" id="btnThemeToggle" title="Cambiar Tema">🌙</button>
+    </div>
+    
+    <form id="formularioTransferencias">
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="periodo">Periodo</label>
+                <select id="periodo" required></select>
+            </div>
+            <div class="form-group">
+                <label for="fecha">Fecha</label>
+                <input type="date" id="fecha" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="cantidad">Cantidad ($ en pesos)</label>
+            <input type="text" id="cantidad" placeholder="0.00 (Toca para calcular)" readonly required>
+        </div>
+
+        <div class="form-group">
+            <label>Cuenta Origen</label>
+            <div class="btn-group-toggle" id="grupoOrigen">
+                <div class="btn-toggle" data-value="NB">NB</div>
+                <div class="btn-toggle" data-value="EF">EF</div>
+                <div class="btn-toggle" data-value="VE">VE</div>
+                <div class="btn-toggle" data-value="ST">ST</div>
+                <div class="btn-toggle" data-value="NU">NU</div>
+                <div class="btn-toggle" data-value="MP">MP</div>
+                <div class="btn-toggle" data-value="DD">DD</div>
+            </div>
+            <input type="hidden" id="origenSeleccionado" required>
+        </div>
+
+        <div class="form-group">
+            <label>Cuenta Destino</label>
+            <div class="btn-group-toggle" id="grupoDestino">
+                <div class="btn-toggle" data-value="NB">NB</div>
+                <div class="btn-toggle" data-value="EF">EF</div>
+                <div class="btn-toggle" data-value="VE">VE</div>
+                <div class="btn-toggle" data-value="ST">ST</div>
+                <div class="btn-toggle" data-value="NU">NU</div>
+                <div class="btn-toggle" data-value="MP">MP</div>
+                <div class="btn-toggle" data-value="DD">DD</div>
+            </div>
+            <input type="hidden" id="destinoSeleccionado" required>
+        </div>
+
+        <div class="form-group">
+            <label for="nota">Nota (Opcional)</label>
+            <textarea id="nota" placeholder="Motivo o detalle opcional..."></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit" id="btnRegistrar">Registrar Transferencia</button>
+    </form>
+
+    <div id="mensaje"></div>
+</div>
+
+<!-- CALCULADORA MODAL -->
+<div class="calc-overlay" id="calcOverlay">
+    <div class="calc-modal">
+        <div class="calc-screen-container">
+            <div class="calc-history" id="calcHistory"></div>
+            <div class="calc-output" id="calcOutput">0</div>
+        </div>
+        
+        <div class="calc-grid">
+            <div class="calc-btn clear" onclick="pressAC()">AC</div>
+            <div class="calc-btn clear" onclick="pressBackspace()">⌫</div>
+            <div class="calc-btn op" onclick="pressPercent()">%</div>
+            <div class="calc-btn op" onclick="pressOp('/')">÷</div>
+            
+            <div class="calc-btn num" onclick="pressNum('7')">7</div>
+            <div class="calc-btn num" onclick="pressNum('8')">8</div>
+            <div class="calc-btn num" onclick="pressNum('9')">9</div>
+            <div class="calc-btn op" onclick="pressOp('*')">×</div>
+            
+            <div class="calc-btn num" onclick="pressNum('4')">4</div>
+            <div class="calc-btn num" onclick="pressNum('5')">5</div>
+            <div class="calc-btn num" onclick="pressNum('6')">6</div>
+            <div class="calc-btn op" onclick="pressOp('-')">−</div>
+            
+            <div class="calc-btn num" onclick="pressNum('1')">1</div>
+            <div class="calc-btn num" onclick="pressNum('2')">2</div>
+            <div class="calc-btn num" onclick="pressNum('3')">3</div>
+            <div class="calc-btn op" onclick="pressOp('+')">+</div>
+            
+            <div class="calc-btn empty"></div>
+            <div class="calc-btn num" onclick="pressNum('0')">0</div>
+            <div class="calc-btn num" onclick="pressNum('.')">.</div>
+            <div class="calc-btn equals" onclick="pressEquals()">=</div>
+            
+            <div class="calc-btn done" onclick="closeCalc()">Aceptar</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzRvv34XfLyIfxy4tnE-zCZqxpLPlWAx_-VxO2D__KWCAlrMBgECetdfwqXGRv-JPxHtQ/exec";
+
+    // Gestión de Tema Claro / Oscuro
+    const btnThemeToggle = document.getElementById('btnThemeToggle');
+    const temaGuardado = localStorage.getItem('theme');
+    const prefiereOscuro = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    if (temaGuardado === 'dark' || (!temaGuardado && prefiereOscuro)) {
+        document.body.classList.add('dark-mode');
+        btnThemeToggle.innerText = '☀️';
+    } else {
+        btnThemeToggle.innerText = '🌙';
+    }
+
+    btnThemeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        const esOscuro = document.body.classList.contains('dark-mode');
+        btnThemeToggle.innerText = esOscuro ? '☀️' : '🌙';
+        localStorage.setItem('theme', esOscuro ? 'dark' : 'light');
+    });
+
+    // Configuración de los 26 Periodos 2026
+    const rangosPeriodos = [
+        { id: 1, inicio: '2026-01-09', fin: '2026-01-22' },
+        { id: 2, inicio: '2026-01-23', fin: '2026-02-05' },
+        { id: 3, inicio: '2026-02-06', fin: '2026-02-19' },
+        { id: 4, inicio: '2026-02-20', fin: '2026-03-05' },
+        { id: 5, inicio: '2026-03-06', fin: '2026-03-19' },
+        { id: 6, inicio: '2026-03-20', fin: '2026-04-02' },
+        { id: 7, inicio: '2026-04-03', fin: '2026-04-16' },
+        { id: 8, inicio: '2026-04-17', fin: '2026-04-30' },
+        { id: 9, inicio: '2026-04-30', fin: '2026-05-13' },
+        { id: 10, inicio: '2026-05-14', fin: '2026-05-27' },
+        { id: 11, inicio: '2026-05-28', fin: '2026-06-10' },
+        { id: 12, inicio: '2026-06-11', fin: '2026-06-24' },
+        { id: 13, inicio: '2026-06-25', fin: '2026-07-08' },
+        { id: 14, inicio: '2026-07-09', fin: '2026-07-22' },
+        { id: 15, inicio: '2026-07-23', fin: '2026-08-05' },
+        { id: 16, inicio: '2026-08-06', fin: '2026-08-19' },
+        { id: 17, inicio: '2026-08-20', fin: '2026-09-02' },
+        { id: 18, inicio: '2026-09-03', fin: '2026-09-16' },
+        { id: 19, inicio: '2026-09-17', fin: '2026-09-30' },
+        { id: 20, inicio: '2026-10-01', fin: '2026-10-14' },
+        { id: 21, inicio: '2026-10-15', fin: '2026-10-28' },
+        { id: 22, inicio: '2026-10-29', fin: '2026-11-11' },
+        { id: 23, inicio: '2026-11-12', fin: '2026-11-25' },
+        { id: 24, inicio: '2026-11-26', fin: '2026-12-09' },
+        { id: 25, inicio: '2026-12-10', fin: '2026-12-23' },
+        { id: 26, inicio: '2026-12-24', fin: '2027-01-06' }
+    ];
+
+    function obtenerPeriodoPorFecha(fechaObj) {
+        const target = new Date(fechaObj.getFullYear(), fechaObj.getMonth(), fechaObj.getDate()).getTime();
+        for (let p of rangosPeriodos) {
+            if(!p.inicio) continue;
+            let [pAnoI, pMesI, pDiaI] = p.inicio.split('-').map(Number);
+            let [pAnoF, pMesF, pDiaF] = p.fin.split('-').map(Number);
+            let dateInicio = new Date(pAnoI, pMesI - 1, pDiaI).getTime();
+            let dateFin = new Date(pAnoF, pMesF - 1, pDiaF).getTime();
+            if (target >= dateInicio && target <= dateFin) return p.id.toString();
+        }
+        return "1";
+    }
+
+    const periodoSelect = document.getElementById('periodo');
+    const fechaInput = document.getElementById('fecha');
+
+    function establecerFechaLocal(inputElem) {
+        const hoy = new Date();
+        const ano = hoy.getFullYear();
+        const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+        const dia = String(hoy.getDate()).padStart(2, '0');
+        inputElem.value = `${ano}-${mes}-${dia}`;
+        return hoy;
+    }
+
+    const fechaActual = establecerFechaLocal(fechaInput);
+    const periodoInicialDefault = obtenerPeriodoPorFecha(fechaActual);
+
+    for (let i = 1; i <= 26; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.innerText = i;
+        if (i === parseInt(periodoInicialDefault)) opt.selected = true;
+        periodoSelect.appendChild(opt);
+    }
+
+    fechaInput.addEventListener('change', function() {
+        if (this.value) {
+            const partes = this.value.split('-');
+            const fechaElegida = new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
+            periodoSelect.value = obtenerPeriodoPorFecha(fechaElegida);
+        }
+    });
+
+    // Lógica para botones de Cuenta Origen y Destino
+    function configurarBotonesToggle(idContenedor, idHidden, claseActiva) {
+        const contenedor = document.getElementById(idContenedor);
+        const hiddenInput = document.getElementById(idHidden);
+        const botones = contenedor.querySelectorAll('.btn-toggle');
+        botones.forEach(btn => {
+            btn.addEventListener('click', function() {
+                botones.forEach(b => b.classList.remove(claseActiva));
+                this.classList.add(claseActiva);
+                hiddenInput.value = this.getAttribute('data-value');
+            });
+        });
+    }
+
+    configurarBotonesToggle('grupoOrigen', 'origenSeleccionado', 'active-origen');
+    configurarBotonesToggle('grupoDestino', 'destinoSeleccionado', 'active-destino');
+
+    // CALCULADORA INTEGRADA
+    const cantidadInput = document.getElementById('cantidad');
+    const calcOverlay = document.getElementById('calcOverlay');
+    const calcHistory = document.getElementById('calcHistory');
+    const calcOutput = document.getElementById('calcOutput');
+    let currentInput = "0"; 
+    let expression = "";    
+    let isEvaluated = false;
+
+    cantidadInput.addEventListener('click', function() {
+        let valActual = cantidadInput.value || "0";
+        currentInput = valActual === "0" ? "0" : valActual;
+        expression = valActual === "0" ? "" : valActual;
+        calcHistory.innerText = "";
+        calcOutput.innerText = currentInput;
+        calcOverlay.classList.add('active');
+    });
+
+    window.pressNum = function(num) {
+        if (isEvaluated) {
+            currentInput = "";
+            expression = "";
+            isEvaluated = false;
+        }
+        if (currentInput === "0" && num !== ".") {
+            currentInput = num;
+        } else {
+            if (num === "." && currentInput.includes(".")) return;
+            currentInput += num;
+        }
+        expression += num;
+        calcOutput.innerText = currentInput;
+    };
+
+    window.pressOp = function(op) {
+        isEvaluated = false;
+        if (expression === "") expression = currentInput === "0" ? "0" : currentInput;
+        const lastChar = expression.trim().slice(-1);
+        if (["+", "-", "*", "/"].includes(lastChar)) expression = expression.trim().slice(0, -1);
+        expression = expression.trim() + " " + op + " ";
+        calcHistory.innerText = expression.replace(/\*/g, "×").replace(/\//g, "÷");
+        currentInput = "0";
+    };
+
+    window.pressAC = function() {
+        currentInput = "0";
+        expression = "";
+        calcHistory.innerText = "";
+        calcOutput.innerText = "0";
+        isEvaluated = false;
+    };
+
+    window.pressBackspace = function() {
+        if (isEvaluated) {
+            calcHistory.innerText = "";
+            isEvaluated = false;
+            return;
+        }
+        if (currentInput.length > 1) {
+            currentInput = currentInput.slice(0, -1);
+            expression = expression.trim().slice(0, -1);
+        } else {
+            currentInput = "0";
+            if(expression.length > 0) expression = expression.trim().slice(0, -1);
+        }
+        calcOutput.innerText = currentInput;
+    };
+
+    window.pressPercent = function() {
+        if (currentInput === "0" || expression === "") return;
+        let tokens = expression.trim().split(" ");
+        if (tokens.length >= 3) {
+            let baseValue = parseFloat(tokens[tokens.length - 3]);
+            let operator = tokens[tokens.length - 2];
+            let percentModifier = parseFloat(currentInput);
+            if (!isNaN(baseValue) && ["+", "-"].includes(operator)) {
+                let realPercentValue = baseValue * (percentModifier / 100);
+                let lengthToRemove = currentInput.length;
+                expression = expression.slice(0, expression.length - lengthToRemove) + realPercentValue.toString();
+                calcHistory.innerText = tokens.slice(0, -1).join(" ").replace(/\*/g, "×").replace(/\//g, "÷") + " " + percentModifier + "%";
+                currentInput = realPercentValue.toString();
+                calcOutput.innerText = percentModifier + "%";
+                return;
+            }
+        }
+        try {
+            let val = parseFloat(currentInput) / 100;
+            let lengthToRemove = currentInput.length;
+            expression = expression.slice(0, expression.length - lengthToRemove) + val.toString();
+            currentInput = val.toString();
+            calcOutput.innerText = currentInput;
+        } catch (e) {
+            calcOutput.innerText = "Error";
+        }
+    };
+
+    window.pressEquals = function() {
+        if (expression === "") return;
+        if (!calcHistory.innerText.includes("%")) {
+            calcHistory.innerText = expression.replace(/\*/g, "×").replace(/\//g, "÷") + " =";
+        } else {
+            calcHistory.innerText += " =";
+        }
+        try {
+            let result = eval(expression);
+            if (result !== undefined) {
+                result = Math.round(result * 100) / 100;
+                currentInput = result.toString();
+                expression = currentInput; 
+                calcOutput.innerText = currentInput;
+                isEvaluated = true;
+            }
+        } catch (e) {
+            calcOutput.innerText = "Error";
+            currentInput = "0";
+            expression = "";
+        }
+    };
+
+    window.closeCalc = function() {
+        if (!isEvaluated && expression !== "") pressEquals();
+        cantidadInput.value = currentInput || "0";
+        calcOverlay.classList.remove('active');
+    };
+
+    calcOverlay.addEventListener('click', function(e) {
+        if (e.target === calcOverlay) closeCalc();
+    });
+
+    // Envío del Formulario
+    async function enviarConReintentos(url, datos, reintentosMaximos = 3) {
+        for (let i = 0; i < reintentosMaximos; i++) {
+            try {
+                await fetch(url, {
+                    method: 'POST',
+                    mode: 'no-cors', 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datos)
+                });
+                return true; 
+            } catch (error) {
+                console.warn(`Intento ${i + 1} fallido. Reintentando...`, error);
+                if (i === reintentosMaximos - 1) throw error; 
+            }
+        }
+    }
+
+    const formulario = document.getElementById('formularioTransferencias');
+    const mensajeDiv = document.getElementById('mensaje');
+    const btnRegistrar = document.getElementById('btnRegistrar');
+
+    formulario.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const origen = document.getElementById('origenSeleccionado').value;
+        if (!origen) { alert('Por favor, selecciona una Cuenta Origen.'); return; }
+        
+        const destino = document.getElementById('destinoSeleccionado').value;
+        if (!destino) { alert('Por favor, selecciona una Cuenta Destino.'); return; }
+
+        if (origen === destino) {
+            alert('La Cuenta Origen y la Cuenta Destino deben ser diferentes.');
+            return;
+        }
+
+        const mnt = parseFloat(cantidadInput.value);
+        if (isNaN(mnt) || mnt <= 0) { alert('Por favor, ingresa una Cantidad válida mayor a 0.'); return; }
+
+        const datos = {
+            tipoFormulario: "Transferencias",
+            periodo: periodoSelect.value,
+            cuentaOrigen: origen,
+            cuentaDestino: destino,
+            cantidad: mnt,
+            fecha: fechaInput.value,
+            nota: document.getElementById('nota').value
+        };
+
+        btnRegistrar.classList.add('sending');
+        btnRegistrar.innerText = "Enviando...";
+        btnRegistrar.disabled = true;
+        mensajeDiv.style.display = "none";
+
+        try {
+            await enviarConReintentos(WEB_APP_URL, datos, 3);
+            
+            btnRegistrar.classList.remove('sending');
+            btnRegistrar.innerText = "Registrar Transferencia";
+            btnRegistrar.disabled = false;
+
+            mensajeDiv.className = "simulacion-exito";
+            mensajeDiv.innerHTML = `<strong>¡Guardado con éxito!</strong> Transferencia registrada en la pestaña Transferencias.`;
+            mensajeDiv.style.display = "block";
+
+            formulario.reset();
+            
+            const resetHoy = establecerFechaLocal(fechaInput);
+            periodoSelect.value = obtenerPeriodoPorFecha(resetHoy);
+            
+            document.getElementById('origenSeleccionado').value = '';
+            document.getElementById('destinoSeleccionado').value = '';
+            document.querySelectorAll('.btn-toggle').forEach(b => {
+                b.classList.remove('active-origen', 'active-destino');
+            });
+
+            setTimeout(() => { mensajeDiv.style.display = "none"; }, 4000);
+
+        } catch (err) {
+            console.error("Error definitivo tras 3 intentos:", err);
+            btnRegistrar.classList.remove('sending');
+            btnRegistrar.innerText = "Registrar Transferencia";
+            btnRegistrar.disabled = false;
+
+            mensajeDiv.className = "simulacion-error";
+            mensajeDiv.innerText = "No se pudo guardar la información, intenta nuevamente";
+            mensajeDiv.style.display = "block";
+
+            setTimeout(() => { mensajeDiv.style.display = "none"; }, 3000);
+        }
+    });
+</script>
+
+</body>
+</html>
