@@ -110,7 +110,7 @@
 
     .grid-apartados {
       grid-template-columns: repeat(3, 1fr);
-      max-height: 155px;
+      max-height: 285px;
       overflow-y: auto;
       padding-right: 2px;
     }
@@ -225,12 +225,12 @@
     <!-- FILA 4: CANTIDAD Y TIPO -->
     <div class="row-2">
       <div class="form-group">
-        <span class="label">Cantidad ($)</span>
-        <input type="number" id="cantidad" step="0.01" min="0.01" placeholder="0.00" required>
-      </div>
-      <div class="form-group">
         <span class="label">Tipo</span>
         <div class="btn-grid grid-tipo" id="tipoGrid"></div>
+      </div>
+      <div class="form-group">
+        <span class="label">Cantidad ($)</span>
+        <input type="number" id="cantidad" step="0.01" min="0.01" placeholder="0.00" required>
       </div>
     </div>
 
