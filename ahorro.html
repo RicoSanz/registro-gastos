@@ -252,8 +252,7 @@
 </div>
 
 <script>
-  // Reemplaza con la URL de tu Google Apps Script desplegada que termina en /exec
-  const WEB_APP_URL = "REEMPLAZAR_CON_TU_URL_DE_WEB_APP";
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzRvv34XfLyIfxy4tnE-zCZqxpLPlWAx_-VxO2D__KWCAlrMBgECetdfwqXGRv-JPxHtQ/exec";
 
   const APARTADOS = [
     "Agua", "Ahorro", "Ahorro Pablito", "Ahorro Rikis", "Alimento Nena", "Apoyo hermanas",
@@ -299,21 +298,33 @@
   let selectedTipo = "";
 
   document.addEventListener("DOMContentLoaded", () => {
+    initTheme();
     renderGrids();
     initFecha();
   });
+
+  // Control de Tema Persistente (localStorage)
+  function initTheme() {
+    const savedTheme = localStorage.getItem("appTheme");
+    if (savedTheme === "dark") {
+      document.body.setAttribute("data-theme", "dark");
+    } else {
+      document.body.removeAttribute("data-theme");
+    }
+  }
 
   function toggleTheme() {
     const currentTheme = document.body.getAttribute("data-theme");
     if (currentTheme === "dark") {
       document.body.removeAttribute("data-theme");
+      localStorage.setItem("appTheme", "light");
     } else {
       document.body.setAttribute("data-theme", "dark");
+      localStorage.setItem("appTheme", "dark");
     }
   }
 
   function renderGrids() {
-    // Apartados
     const apGrid = document.getElementById("apartadoGrid");
     APARTADOS.forEach(ap => {
       const btn = document.createElement("div");
@@ -327,7 +338,6 @@
       apGrid.appendChild(btn);
     });
 
-    // Cuentas
     const ctaGrid = document.getElementById("cuentaGrid");
     CUENTAS.forEach(cta => {
       const btn = document.createElement("div");
@@ -341,7 +351,6 @@
       ctaGrid.appendChild(btn);
     });
 
-    // Tipos
     const tpGrid = document.getElementById("tipoGrid");
     TIPOS.forEach(tp => {
       const btn = document.createElement("div");
@@ -366,7 +375,6 @@
     const fechaInput = document.getElementById("fecha");
     
     fechaInput.value = localDate;
-    
     generarPeriodosNumericos();
 
     fechaInput.addEventListener("change", () => {
@@ -428,12 +436,10 @@
     }
 
     const cantidadVal = parseFloat(document.getElementById("cantidad").value);
-    const fechaVal = document.getElementById("fecha").value;
 
     const payload = {
       tipoFormulario: "Ahorro",
       periodo: periodoVal,
-      fecha: fechaVal,
       apartado: selectedApartado,
       cuenta: selectedCuenta,
       tipo: selectedTipo,
