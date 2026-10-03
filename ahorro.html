@@ -35,7 +35,7 @@
       color: var(--text);
       display: flex;
       justify-content: center;
-      padding: 10px;
+      padding: 8px;
       font-size: 13px;
     }
 
@@ -70,19 +70,26 @@
     .form-group { margin-bottom: 8px; }
     .label { font-weight: 600; margin-bottom: 4px; display: block; font-size: 11px; text-transform: uppercase; color: var(--text); opacity: 0.8; }
 
-    /* Periodo Toggle Switch/Radio */
-    .periodo-toggle {
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      align-items: start;
+    }
+
+    .periodo-container {
       display: flex;
       gap: 6px;
       align-items: center;
     }
-    .periodo-toggle label {
+
+    .periodo-toggle {
       display: flex;
+      gap: 6px;
       align-items: center;
-      gap: 4px;
-      cursor: pointer;
       font-size: 12px;
     }
+    .periodo-toggle label { display: flex; align-items: center; gap: 2px; cursor: pointer; }
 
     select, input[type="number"], input[type="date"], input[type="text"] {
       width: 100%;
@@ -95,28 +102,44 @@
       outline: none;
     }
 
-    /* Compact Button Grids */
+    /* Grids de Botones */
     .btn-grid {
       display: grid;
       gap: 4px;
     }
 
-    .grid-apartados { grid-template-columns: repeat(3, 1fr); max-height: 140px; overflow-y: auto; padding-right: 2px; }
-    .grid-cuentas { grid-template-columns: repeat(4, 1fr); }
-    .grid-tipo { grid-template-columns: repeat(2, 1fr); }
+    .grid-apartados {
+      grid-template-columns: repeat(3, 1fr);
+      max-height: 155px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .grid-cuentas {
+      grid-template-columns: repeat(6, 1fr);
+      width: 100%;
+    }
+
+    .grid-tipo {
+      grid-template-columns: repeat(2, 1fr);
+    }
 
     .grid-btn {
       background: var(--btn-bg);
       border: 1px solid var(--border);
       color: var(--text);
-      padding: 5px 2px;
+      padding: 6px 2px;
       border-radius: 5px;
-      font-size: 11px;
+      font-size: 10.5px;
       cursor: pointer;
       text-align: center;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      white-space: normal;
+      word-wrap: break-word;
+      line-height: 1.1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 32px;
       user-select: none;
     }
 
@@ -127,23 +150,18 @@
       font-weight: 600;
     }
 
-    .row-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-
     /* Radios de Comentario */
     .radio-group {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       align-items: center;
+      flex-wrap: wrap;
       margin-bottom: 4px;
     }
     .radio-group label {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
       font-size: 12px;
       cursor: pointer;
     }
@@ -162,8 +180,7 @@
     }
     .submit-btn:hover { background: var(--primary-hover); }
 
-    /* Modal status */
-    #status { font-size: 11px; text-align: center; margin-top: 4px; font-weight: 600; }
+    #status { font-size: 11px; text-align: center; margin-top: 6px; font-weight: 600; }
   </style>
 </head>
 <body>
@@ -175,39 +192,17 @@
   </div>
 
   <form id="ahorroForm">
-    <!-- PERIODO -->
-    <div class="form-group">
-      <span class="label">Periodo</span>
-      <div class="periodo-toggle" style="margin-bottom: 4px;">
-        <label><input type="radio" name="tipoPeriodo" value="INT" onchange="actualizarPeriodoUI()"> INT</label>
-        <label><input type="radio" name="tipoPeriodo" value="LISTA" checked onchange="actualizarPeriodoUI()"> Quincenal</label>
-      </div>
-      <select id="periodoSelect"></select>
-    </div>
-
-    <!-- APARTADO -->
-    <div class="form-group">
-      <span class="label">Apartado</span>
-      <div class="btn-grid grid-apartados" id="apartadoGrid"></div>
-    </div>
-
-    <!-- CUENTA Y TIPO (Lado a lado) -->
+    <!-- FILA 1: PERIODO Y FECHA -->
     <div class="row-2">
       <div class="form-group">
-        <span class="label">Cuenta</span>
-        <div class="btn-grid grid-cuentas" id="cuentaGrid"></div>
-      </div>
-      <div class="form-group">
-        <span class="label">Tipo</span>
-        <div class="btn-grid grid-tipo" id="tipoGrid"></div>
-      </div>
-    </div>
-
-    <!-- CANTIDAD Y FECHA -->
-    <div class="row-2">
-      <div class="form-group">
-        <span class="label">Cantidad ($)</span>
-        <input type="number" id="cantidad" step="0.01" min="0.01" placeholder="0.00" required>
+        <span class="label">Periodo</span>
+        <div class="periodo-container">
+          <div class="periodo-toggle">
+            <label><input type="radio" name="tipoPeriodo" value="INT" onchange="actualizarPeriodoUI()"> INT</label>
+            <label><input type="radio" name="tipoPeriodo" value="LISTA" checked onchange="actualizarPeriodoUI()"> Lista</label>
+          </div>
+          <select id="periodoSelect" style="flex: 1;"></select>
+        </div>
       </div>
       <div class="form-group">
         <span class="label">Fecha</span>
@@ -215,7 +210,31 @@
       </div>
     </div>
 
-    <!-- COMENTARIO -->
+    <!-- FILA 2: APARTADO -->
+    <div class="form-group">
+      <span class="label">Apartado</span>
+      <div class="btn-grid grid-apartados" id="apartadoGrid"></div>
+    </div>
+
+    <!-- FILA 3: CUENTAS -->
+    <div class="form-group">
+      <span class="label">Cuenta</span>
+      <div class="btn-grid grid-cuentas" id="cuentaGrid"></div>
+    </div>
+
+    <!-- FILA 4: CANTIDAD Y TIPO -->
+    <div class="row-2">
+      <div class="form-group">
+        <span class="label">Cantidad ($)</span>
+        <input type="number" id="cantidad" step="0.01" min="0.01" placeholder="0.00" required>
+      </div>
+      <div class="form-group">
+        <span class="label">Tipo</span>
+        <div class="btn-grid grid-tipo" id="tipoGrid"></div>
+      </div>
+    </div>
+
+    <!-- FILA 5: COMENTARIO -->
     <div class="form-group">
       <span class="label">Comentario (Opcional)</span>
       <div class="radio-group">
@@ -233,10 +252,9 @@
 </div>
 
 <script>
-  // URL de Google Apps Script Web App
+  // Reemplaza con la URL de tu Google Apps Script desplegada
   const WEB_APP_URL = "REEMPLAZAR_CON_TU_URL_DE_WEB_APP";
 
-  // Listas de datos
   const APARTADOS = [
     "Agua", "Ahorro", "Ahorro Pablito", "Ahorro Rikis", "Alimento Nena", "Apoyo hermanas",
     "Bebbia", "Beca Pablito", "Cetina Rikis", "Cripto monedas", "Diezmo Pablito", "Diezmo Rikis",
@@ -247,19 +265,45 @@
   const CUENTAS = ["BC", "CT", "DD", "EF", "ET", "MD", "MP", "NB", "NU", "OP", "RV", "ST"];
   const TIPOS = ["Retiro", "Abono"];
 
-  // Variables de selección
+  // Estructura idéntica a tus otros formularios con rangos exactos de fechas YYYY-MM-DD
+  const rangosPeriodos = [
+    { id: 1, inicio: '2026-01-09', fin: '2026-01-22' },
+    { id: 2, inicio: '2026-01-23', fin: '2026-02-05' },
+    { id: 3, inicio: '2026-02-06', fin: '2026-02-19' },
+    { id: 4, inicio: '2026-02-20', fin: '2026-03-05' },
+    { id: 5, inicio: '2026-03-06', fin: '2026-03-19' },
+    { id: 6, inicio: '2026-03-20', fin: '2026-04-02' },
+    { id: 7, inicio: '2026-04-03', fin: '2026-04-16' },
+    { id: 8, inicio: '2026-04-17', fin: '2026-04-30' },
+    { id: 9, inicio: '2026-04-30', fin: '2026-05-13' },
+    { id: 10, inicio: '2026-05-14', fin: '2026-05-27' },
+    { id: 11, inicio: '2026-05-28', fin: '2026-06-10' },
+    { id: 12, inicio: '2026-06-11', fin: '2026-06-24' },
+    { id: 13, inicio: '2026-06-25', fin: '2026-07-08' },
+    { id: 14, inicio: '2026-07-09', fin: '2026-07-22' },
+    { id: 15, inicio: '2026-07-23', fin: '2026-08-05' },
+    { id: 16, inicio: '2026-08-06', fin: '2026-08-19' },
+    { id: 17, inicio: '2026-08-20', fin: '2026-09-02' },
+    { id: 18, inicio: '2026-09-03', fin: '2026-09-16' },
+    { id: 19, inicio: '2026-09-17', fin: '2026-09-30' },
+    { id: 20, inicio: '2026-10-01', fin: '2026-10-14' },
+    { id: 21, inicio: '2026-10-15', fin: '2026-10-28' },
+    { id: 22, inicio: '2026-10-29', fin: '2026-11-11' },
+    { id: 23, inicio: '2026-11-12', fin: '2026-11-25' },
+    { id: 24, inicio: '2026-11-26', fin: '2026-12-09' },
+    { id: 25, inicio: '2026-12-10', fin: '2026-12-23' },
+    { id: 26, inicio: '2026-12-24', fin: '2027-01-06' }
+  ];
+
   let selectedApartado = "";
   let selectedCuenta = "";
   let selectedTipo = "";
 
-  // Inicialización
   document.addEventListener("DOMContentLoaded", () => {
     renderGrids();
     initFecha();
-    generarPeriodos();
   });
 
-  // Tema Claro/Oscuro
   function toggleTheme() {
     const currentTheme = document.body.getAttribute("data-theme");
     if (currentTheme === "dark") {
@@ -269,7 +313,6 @@
     }
   }
 
-  // Renderizar grids de botones
   function renderGrids() {
     // Apartados
     const apGrid = document.getElementById("apartadoGrid");
@@ -314,46 +357,56 @@
     });
   }
 
-  // Configurar Fecha Actual
   function initFecha() {
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById("fecha").value = today;
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    
+    const localDate = `${year}-${month}-${day}`;
+    const fechaInput = document.getElementById("fecha");
+    
+    fechaInput.value = localDate;
+    
+    generarPeriodosNumericos();
+
+    fechaInput.addEventListener("change", () => {
+      generarPeriodosNumericos();
+    });
   }
 
-  // Generar Lista de 26 Periodos Quincenales
-  function generarPeriodos() {
+  // Genera la lista de periodos (1 al 26) y selecciona el ID que abarca la fecha en YYYY-MM-DD
+  function generarPeriodosNumericos() {
     const select = document.getElementById("periodoSelect");
-    select.innerHTML = "";
-    const currentYear = new Date().getFullYear();
-    const today = new Date();
+    const fechaSeleccionada = document.getElementById("fecha").value;
+    
+    if (!fechaSeleccionada) return;
 
-    let defaultIndex = 0;
-
-    for (let i = 1; i <= 26; i++) {
-      const pNum = i < 10 ? `0${i}` : `${i}`;
-      const optionText = `P${pNum}-${currentYear}`;
-      const option = document.createElement("option");
-      option.value = optionText;
-      option.text = optionText;
-      select.appendChild(option);
-
-      // Estimación aproximada de periodo quincenal actual
-      const quincenaActual = Math.min(Math.ceil(((today.getMonth() * 2) + (today.getDate() > 15 ? 2 : 1))), 26);
-      if (i === quincenaActual) {
-        defaultIndex = i - 1;
+    // Buscar el periodo cuya fecha de inicio sea <= fechaSeleccionada y fin sea >= fechaSeleccionada
+    let periodoEncontrado = 1;
+    for (const rango of rangosPeriodos) {
+      if (fechaSeleccionada >= rango.inicio && fechaSeleccionada <= rango.fin) {
+        periodoEncontrado = rango.id;
+        break;
       }
     }
-    select.selectedIndex = defaultIndex;
+
+    // Llenar select solo con los números (1 a 26)
+    select.innerHTML = "";
+    for (let i = 1; i <= 26; i++) {
+      const option = document.createElement("option");
+      option.value = i.toString();
+      option.text = i.toString();
+      select.appendChild(option);
+    }
+    
+    select.value = periodoEncontrado.toString();
   }
 
   function actualizarPeriodoUI() {
     const tipo = document.querySelector('input[name="tipoPeriodo"]:checked').value;
     const select = document.getElementById("periodoSelect");
-    if (tipo === "INT") {
-      select.style.display = "none";
-    } else {
-      select.style.display = "block";
-    }
+    select.style.display = (tipo === "INT") ? "none" : "block";
   }
 
   function toggleOtroTexto(show) {
@@ -362,7 +415,6 @@
     if (!show) txt.value = "";
   }
 
-  // Envío del Formulario
   document.getElementById("ahorroForm").addEventListener("submit", function(e) {
     e.preventDefault();
 
@@ -370,11 +422,9 @@
     if (!selectedCuenta) { alert("Por favor selecciona una Cuenta."); return; }
     if (!selectedTipo) { alert("Por favor selecciona un Tipo (Retiro/Abono)."); return; }
 
-    // Obtener Periodo
     const tipoPeriodo = document.querySelector('input[name="tipoPeriodo"]:checked').value;
     const periodoVal = tipoPeriodo === "INT" ? "INT" : document.getElementById("periodoSelect").value;
 
-    // Obtener Comentario
     const comRadio = document.querySelector('input[name="comentarioOpt"]:checked').value;
     let comentarioVal = comRadio;
     if (comRadio === "Otros") {
@@ -382,7 +432,6 @@
     }
 
     const cantidadVal = parseFloat(document.getElementById("cantidad").value);
-    const fechaVal = document.getElementById("fecha").value;
 
     const payload = {
       tipoFormulario: "Ahorro",
@@ -391,7 +440,6 @@
       cuenta: selectedCuenta,
       tipo: selectedTipo,
       cantidad: cantidadVal,
-      fecha: fechaVal,
       comentario: comentarioVal
     };
 
@@ -412,7 +460,6 @@
       statusDiv.style.color = "var(--accent)";
       statusDiv.innerText = "¡Registro guardado con éxito!";
       
-      // Limpieza de campos clave
       document.getElementById("cantidad").value = "";
       document.getElementById("comentarioOtro").value = "";
       document.querySelectorAll(".grid-btn").forEach(b => b.classList.remove("selected"));
