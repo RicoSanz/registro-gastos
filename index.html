@@ -3,101 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de gastos 2026 - v1.4</title>
+    <title>Registro de gastos 2026 - v1.5</title>
     <style>
+        :root {
+            --bg-body: #f0f4f8;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-title: #1e293b;
+            --text-label: #475569;
+            --border-input: #cbd5e1;
+            --bg-input: #f8fafc;
+            --bg-input-focus: #ffffff;
+            --bg-btn-toggle: #f1f5f9;
+            --text-btn-toggle: #475569;
+            --shadow-card: rgba(0, 0, 0, 0.06);
+            --bg-calc-overlay: rgba(0, 0, 0, 0.4);
+            --bg-calc-modal: #ffffff;
+            --bg-calc-screen: #f1f3f4;
+            --border-calc-screen: #dadce0;
+            --text-calc-history: #70757a;
+            --text-calc-output: #202124;
+            --bg-calc-num: #f1f3f4;
+            --text-calc-num: #202124;
+            --bg-apartado-box: #f8fafc;
+            --border-apartado-box: #94a3b8;
+            --bg-radio-container: #f1f5f9;
+            --bg-gasto-input: #edf2f7;
+            --text-gasto-input: #1e293b;
+        }
+
+        body.dark-mode {
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f8fafc;
+            --text-title: #f1f5f9;
+            --text-label: #94a3b8;
+            --border-input: #334155;
+            --bg-input: #0f172a;
+            --bg-input-focus: #1e293b;
+            --bg-btn-toggle: #334155;
+            --text-btn-toggle: #cbd5e1;
+            --shadow-card: rgba(0, 0, 0, 0.4);
+            --bg-calc-overlay: rgba(0, 0, 0, 0.7);
+            --bg-calc-modal: #1e293b;
+            --bg-calc-screen: #0f172a;
+            --border-calc-screen: #334155;
+            --text-calc-history: #94a3b8;
+            --text-calc-output: #f8fafc;
+            --bg-calc-num: #334155;
+            --text-calc-num: #f8fafc;
+            --bg-apartado-box: #0f172a;
+            --border-apartado-box: #475569;
+            --bg-radio-container: #334155;
+            --bg-gasto-input: #0f172a;
+            --text-gasto-input: #f8fafc;
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
         }
+
         body {
-            background-color: #f0f4f8;
+            background-color: var(--bg-body);
             display: flex;
             justify-content: center;
             align-items: flex-start;
             min-height: 100vh;
             padding: 8px;
         }
+
         .container {
-            background-color: #ffffff;
+            background-color: var(--bg-card);
             width: 100%;
             max-width: 440px;
             padding: 12px 14px;
             border-radius: 12px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            box-shadow: 0 2px 12px var(--shadow-card);
+            position: relative;
         }
-        h2 {
-            text-align: center;
-            color: #1e293b;
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 10px;
+        }
+
+        h2 {
+            color: var(--text-title);
             font-weight: 700;
             font-size: 16px;
+            margin: 0;
         }
+
+        .theme-toggle-btn {
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 50%;
+            line-height: 1;
+        }
+
         .form-row {
             display: flex;
             gap: 8px;
             margin-bottom: 8px;
         }
+
         .form-row .form-group {
             flex: 1;
             margin-bottom: 0;
         }
+
         .form-group {
             margin-bottom: 8px;
         }
+
         label {
             display: block;
             margin-bottom: 2px;
-            color: #475569;
+            color: var(--text-label);
             font-size: 11px;
             font-weight: 600;
         }
+
         input, select, textarea {
             width: 100%;
             padding: 7px 9px;
-            border: 1.5px solid #cbd5e1;
+            border: 1.5px solid var(--border-input);
             border-radius: 6px;
             font-size: 14px;
-            color: #0f172a;
-            background-color: #f8fafc;
+            color: var(--text-main);
+            background-color: var(--bg-input);
+            color-scheme: light;
             -webkit-appearance: none;
         }
+
+        body.dark-mode input, 
+        body.dark-mode select, 
+        body.dark-mode textarea {
+            color-scheme: dark;
+        }
+
         input:focus, select:focus, textarea:focus {
             outline: none;
             border-color: #3b82f6;
-            background-color: #ffffff;
+            background-color: var(--bg-input-focus);
         }
+
+        #gasto {
+            background-color: var(--bg-gasto-input) !important;
+            color: var(--text-gasto-input) !important;
+            caret-color: transparent;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
         textarea {
             resize: none;
             height: 36px;
             font-size: 13px;
         }
-        
-        /* Grid para botones de Cuenta (7 columnas para Cuenta Principal) */
+
+        /* Grid para botones de Cuenta (7 columnas) */
         .btn-group-toggle-cuenta {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             gap: 4px;
         }
-        /* Grid para botones de Cuenta de Ahorro (6 columnas para acomodar 12 valores simétricamente) */
+
+        /* Grid para botones de Cuenta de Ahorro (6 columnas) */
         .btn-group-toggle-ahorro {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
             gap: 4px;
         }
+
         .btn-toggle {
             padding: 5px 0;
-            background-color: #f1f5f9;
-            border: 1px solid #cbd5e1;
+            background-color: var(--bg-btn-toggle);
+            border: 1px solid var(--border-input);
             border-radius: 6px;
-            color: #475569;
+            color: var(--text-btn-toggle);
             font-size: 11px;
             font-weight: 700;
             text-align: center;
             cursor: pointer;
             user-select: none;
         }
+
         .btn-toggle.active {
             background-color: #3b82f6;
             border-color: #3b82f6;
@@ -111,18 +212,20 @@
             gap: 4px;
             padding: 2px 0;
         }
+
         .btn-categoria {
             padding: 5px 2px;
-            background-color: #f1f5f9;
-            border: 1px solid #cbd5e1;
+            background-color: var(--bg-btn-toggle);
+            border: 1px solid var(--border-input);
             border-radius: 6px;
-            color: #475569;
+            color: var(--text-btn-toggle);
             font-size: 11.5px;
             font-weight: 700;
             text-align: center;
             cursor: pointer;
             user-select: none;
         }
+
         .btn-categoria.active {
             background-color: #3b82f6;
             border-color: #3b82f6;
@@ -134,18 +237,19 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 4px;
-            border: 1.5px solid #cbd5e1;
+            border: 1.5px solid var(--border-input);
             padding: 6px;
             border-radius: 6px;
-            background-color: #f8fafc;
+            background-color: var(--bg-input);
         }
+
         .btn-concepto {
             text-align: center;
             padding: 5px 2px;
-            background-color: #ffffff;
-            border: 1px solid #cbd5e1;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-input);
             border-radius: 4px;
-            color: #334155;
+            color: var(--text-main);
             font-size: 11px;
             font-weight: 600;
             cursor: pointer;
@@ -155,16 +259,18 @@
             justify-content: center;
             min-height: 28px;
         }
+
         .btn-concepto.active {
             background-color: #6366f1;
             border-color: #6366f1;
             color: #ffffff;
         }
+
         .btn-concepto.disabled {
             grid-column: span 3;
-            background-color: #f1f5f9;
-            color: #94a3b8;
-            border-color: #e2e8f0;
+            background-color: var(--bg-btn-toggle);
+            color: var(--text-label);
+            border-color: var(--border-input);
             cursor: not-allowed;
             opacity: 0.6;
             text-align: center;
@@ -172,36 +278,39 @@
 
         /* Sección de Apartado */
         .seccion-apartado {
-            background-color: #f8fafc;
-            border: 1px dashed #94a3b8;
+            background-color: var(--bg-apartado-box);
+            border: 1px dashed var(--border-apartado-box);
             border-radius: 8px;
             padding: 8px;
             margin: 8px 0;
             display: none;
         }
+
         .radio-container {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background-color: #f1f5f9;
+            background-color: var(--bg-radio-container);
             padding: 5px 10px;
             border-radius: 6px;
         }
+
         .radio-group {
             display: flex;
             gap: 12px;
         }
+
         .radio-option {
             display: flex;
             align-items: center;
             gap: 3px;
             font-size: 13px;
             font-weight: 600;
-            color: #334155;
+            color: var(--text-main);
             cursor: pointer;
         }
 
-        /* Estados dinámicos del botón de envío */
+        /* Botón de Envío */
         .btn-submit {
             width: 100%;
             padding: 10px;
@@ -215,11 +324,12 @@
             margin-top: 5px;
             transition: background-color 0.2s ease;
         }
+
         .btn-submit.sending {
             background-color: #f97316 !important;
             cursor: not-allowed;
         }
-        
+
         #mensaje {
             margin-top: 8px;
             padding: 6px;
@@ -229,15 +339,29 @@
             display: none;
             font-weight: 600;
         }
+
         .simulacion-exito {
             background-color: #ecfdf5;
             color: #065f46;
             border: 1px solid #a7f3d0;
         }
+
+        body.dark-mode .simulacion-exito {
+            background-color: #064e3b;
+            color: #a7f3d0;
+            border-color: #059669;
+        }
+
         .simulacion-error {
             background-color: #fef2f2;
             color: #991b1b;
             border: 1px solid #fca5a5;
+        }
+
+        body.dark-mode .simulacion-error {
+            background-color: #7f1d1d;
+            color: #fecaca;
+            border-color: #dc2626;
         }
 
         /* INTERFAZ CALCULADORA */
@@ -247,7 +371,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.3);
+            background-color: var(--bg-calc-overlay);
             display: flex;
             justify-content: center;
             align-items: flex-end;
@@ -256,21 +380,24 @@
             opacity: 0;
             transition: opacity 0.2s ease, visibility 0.2s ease;
         }
+
         .calc-overlay.active {
             visibility: visible;
             opacity: 1;
         }
+
         .calc-modal {
-            background-color: #ffffff;
+            background-color: var(--bg-calc-modal);
             padding: 16px;
             border-radius: 16px 16px 0 0;
             width: 100%;
             max-width: 440px;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
         }
+
         .calc-screen-container {
-            background-color: #f1f3f4;
-            border: 1px solid #dadce0;
+            background-color: var(--bg-calc-screen);
+            border: 1px solid var(--border-calc-screen);
             border-radius: 8px;
             padding: 10px 14px;
             margin-bottom: 12px;
@@ -280,28 +407,32 @@
             justify-content: space-between;
             align-items: flex-end;
         }
+
         .calc-history {
-            color: #70757a;
+            color: var(--text-calc-history);
             font-size: 13px;
             font-family: Roboto, Arial, sans-serif;
             min-height: 16px;
             word-break: break-all;
             text-align: right;
         }
+
         .calc-output {
-            color: #202124;
+            color: var(--text-calc-output);
             font-size: 28px;
             font-weight: 400;
             font-family: Roboto, Arial, sans-serif;
             line-height: 1.2;
         }
+
         .calc-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 8px;
         }
+
         .calc-btn {
-            border: 1px solid #dadce0;
+            border: 1px solid var(--border-calc-screen);
             padding: 14px 0;
             font-size: 18px;
             font-weight: 500;
@@ -313,34 +444,30 @@
             font-family: Roboto, Arial, sans-serif;
             transition: background-color 0.1s;
         }
-        
+
         .calc-btn.num {
-            background-color: #f1f3f4;
-            color: #202124;
+            background-color: var(--bg-calc-num);
+            color: var(--text-calc-num);
         }
-        .calc-btn.num:active { background-color: #e8eaed; }
 
         .calc-btn.op {
-            background-color: #f1f3f4;
-            color: #1a73e8;
+            background-color: var(--bg-calc-num);
+            color: #3b82f6;
             font-size: 20px;
         }
-        .calc-btn.op:active { background-color: #e8eaed; }
 
         .calc-btn.clear {
-            background-color: #f1f3f4;
-            color: #d93025;
+            background-color: var(--bg-calc-num);
+            color: #ef4444;
             font-weight: 600;
         }
-        .calc-btn.clear:active { background-color: #e8eaed; }
 
         .calc-btn.equals {
-            background-color: #1a73e8;
+            background-color: #3b82f6;
             color: #ffffff;
-            border-color: #1a73e8;
+            border-color: #3b82f6;
             font-weight: 700;
         }
-        .calc-btn.equals:active { background-color: #155cb4; }
 
         .calc-btn.empty {
             visibility: hidden;
@@ -359,19 +486,21 @@
             padding: 14px 0;
             margin-top: 4px;
         }
-        .calc-btn.done:active { background-color: #059669; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Registro de gastos 2026</h2>
+    <div class="header-row">
+        <h2>Registro de gastos 2026</h2>
+        <button type="button" class="theme-toggle-btn" id="btnThemeToggle" title="Cambiar Tema">🌙</button>
+    </div>
     
     <form id="formularioGastos">
         
         <div class="form-group">
             <label for="gasto">Gasto ($ en pesos)</label>
-            <input type="text" id="gasto" placeholder="0.00 (Toca para calcular)" readonly required style="caret-color: transparent; cursor: pointer; background-color: #edf2f7; font-weight:700; font-size:16px; color:#1e293b;">
+            <input type="text" id="gasto" placeholder="0.00 (Toca para calcular)" readonly required>
         </div>
         
         <div class="form-row">
@@ -536,8 +665,26 @@
 </div>
 
 <script>
-    // URL Final Configurada con tu Google Apps Script de Producción
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzRvv34XfLyIfxy4tnE-zCZqxpLPlWAx_-VxO2D__KWCAlrMBgECetdfwqXGRv-JPxHtQ/exec";
+
+    // Lógica de Modo Oscuro con detección automática y persistencia
+    const btnThemeToggle = document.getElementById('btnThemeToggle');
+    const temaGuardado = localStorage.getItem('theme');
+    const prefiereOscuro = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    if (temaGuardado === 'dark' || (!temaGuardado && prefiereOscuro)) {
+        document.body.classList.add('dark-mode');
+        btnThemeToggle.innerText = '☀️';
+    } else {
+        btnThemeToggle.innerText = '🌙';
+    }
+
+    btnThemeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        const esOscuro = document.body.classList.contains('dark-mode');
+        btnThemeToggle.innerText = esOscuro ? '☀️️' : '🌙';
+        localStorage.setItem('theme', esOscuro ? 'dark' : 'light');
+    });
 
     const rangosPeriodos = [
         { id: 1, inicio: '2026-01-09', fin: '2026-01-22' },
@@ -561,7 +708,7 @@
         { id: 19, inicio: '2026-09-17', fin: '2026-09-30' },
         { id: 20, inicio: '2026-10-01', fin: '2026-10-14' },
         { id: 21, inicio: '2026-10-15', fin: '2026-10-28' },
-        { id: 22, login: '2026-10-29', fin: '2026-11-11' },
+        { id: 22, inicio: '2026-10-29', fin: '2026-11-11' },
         { id: 23, inicio: '2026-11-12', fin: '2026-11-25' },
         { id: 24, inicio: '2026-11-26', fin: '2026-12-09' },
         { id: 25, inicio: '2026-12-10', fin: '2026-12-23' },
@@ -635,14 +782,17 @@
     const gastoInput = document.getElementById('gasto');
     const btnRegistrar = document.getElementById('btnRegistrar');
 
-    // CÓDIGO CORREGIDO PARA FECHA:
-    const hoy = new Date();
-    const ano = hoy.getFullYear();
-    const mes = String(hoy.getMonth() + 1).padStart(2, '0');
-    const dia = String(hoy.getDate()).padStart(2, '0');
-    fechaInput.value = `${ano}-${mes}-${dia}`;
-    
-    const periodoInicialDefault = obtenerPeriodoPorFecha(hoy);
+    function establecerFechaLocal(inputElem) {
+        const hoy = new Date();
+        const ano = hoy.getFullYear();
+        const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+        const dia = String(hoy.getDate()).padStart(2, '0');
+        inputElem.value = `${ano}-${mes}-${dia}`;
+        return hoy;
+    }
+
+    const fechaActual = establecerFechaLocal(fechaInput);
+    const periodoInicialDefault = obtenerPeriodoPorFecha(fechaActual);
 
     for (let i = 1; i <= 26; i++) {
         const opt = document.createElement('option');
@@ -862,11 +1012,10 @@
         if (e.target === calcOverlay) closeCalc();
     });
 
-    // LOGICA DE REINTENTOS PARA ENVÍO SEGURO
     async function enviarConReintentos(url, datos, reintentosMaximos = 3) {
         for (let i = 0; i < reintentosMaximos; i++) {
             try {
-                const respuesta = await fetch(url, {
+                await fetch(url, {
                     method: 'POST',
                     mode: 'no-cors', 
                     headers: { 'Content-Type': 'application/json' },
@@ -906,37 +1055,25 @@
             cuenta_ahorro: registrarAp === 'Sí' ? cuentaAhorroHidden.value : 'N/A'
         };
 
-        // Estado "Enviando..." en color Naranja
         btnRegistrar.classList.add('sending');
         btnRegistrar.innerText = "Enviando";
         btnRegistrar.disabled = true;
         mensajeDiv.style.display = "none";
 
         try {
-            // Ejecución de guardado con la validación de 3 reintentos
             await enviarConReintentos(WEB_APP_URL, datos, 3);
             
-            // ÉXITO: Regresar botón a verde
             btnRegistrar.classList.remove('sending');
             btnRegistrar.innerText = "Registrar gasto";
             btnRegistrar.disabled = false;
 
             mensajeDiv.className = "simulacion-exito";
-            mensajeDiv.innerHTML = `<strong>¡Guardado con éxito!</strong> Informacion enviada a la pestaña Gastos.`;
+            mensajeDiv.innerHTML = `<strong>¡Guardado con éxito!</strong> Información enviada a la pestaña Gastos.`;
             mensajeDiv.style.display = "block";
 
-            // LIMPIAR CAMPOS E INICIAR NUEVA CAPTURA
             formulario.reset();
             
-            //const resetHoy = new Date();
-            //fechaInput.valueAsDate = resetHoy;
-            //periodoSelect.value = obtenerPeriodoPorFecha(resetHoy);
-            // CÓDIGO CORREGIDO fecha correcta:
-            const resetHoy = new Date();
-            const rAno = resetHoy.getFullYear();
-            const rMes = String(resetHoy.getMonth() + 1).padStart(2, '0');
-            const rDia = String(resetHoy.getDate()).padStart(2, '0');
-            fechaInput.value = `${rAno}-${rMes}-${rDia}`;
+            const resetHoy = establecerFechaLocal(fechaInput);
             periodoSelect.value = obtenerPeriodoPorFecha(resetHoy);
             
             botonesCategoria.forEach(b => b.classList.remove('active'));
@@ -951,7 +1088,6 @@
             setTimeout(() => { mensajeDiv.style.display = "none"; }, 4000);
 
         } catch (err) {
-            // ERROR: Conservar información capturada, botón vuelve a verde y muestra leyenda por 3 segundos
             console.error("Error definitivo tras 3 intentos:", err);
             btnRegistrar.classList.remove('sending');
             btnRegistrar.innerText = "Registrar gasto";
