@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro de Ahorro</title>
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --border: #cbd5e1;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --btn-bg: #f1f5f9;
+      --btn-active: #2563eb;
+      --btn-active-text: #ffffff;
+      --accent: #10b981;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --text: #f8fafc;
+      --border: #334155;
+      --btn-bg: #334155;
+      --btn-active: #3b82f6;
+      --btn-active-text: #ffffff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      padding: 10px;
+      font-size: 13px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .header h2 { font-size: 1.1rem; font-weight: 700; }
+
+    .theme-toggle {
+      background: var(--btn-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 4px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .form-group { margin-bottom: 8px; }
+    .label { font-weight: 600; margin-bottom: 4px; display: block; font-size: 11px; text-transform: uppercase; color: var(--text); opacity: 0.8; }
+
+    /* Periodo Toggle Switch/Radio */
+    .periodo-toggle {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .periodo-toggle label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    select, input[type="number"], input[type="date"], input[type="text"] {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+    }
+
+    /* Compact Button Grids */
+    .btn-grid {
+      display: grid;
+      gap: 4px;
+    }
+
+    .grid-apartados { grid-template-columns: repeat(3, 1fr); max-height: 140px; overflow-y: auto; padding-right: 2px; }
+    .grid-cuentas { grid-template-columns: repeat(4, 1fr); }
+    .grid-tipo { grid-template-columns: repeat(2, 1fr); }
+
+    .grid-btn {
+      background: var(--btn-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 5px 2px;
+      border-radius: 5px;
+      font-size: 11px;
+      cursor: pointer;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      user-select: none;
+    }
+
+    .grid-btn.selected {
+      background: var(--btn-active);
+      color: var(--btn-active-text);
+      border-color: var(--btn-active);
+      font-weight: 600;
+    }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    /* Radios de Comentario */
+    .radio-group {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .radio-group label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .submit-btn {
+      width: 100%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+    .submit-btn:hover { background: var(--primary-hover); }
+
+    /* Modal status */
+    #status { font-size: 11px; text-align: center; margin-top: 4px; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h2>Registro de Ahorro</h2>
+    <button type="button" class="theme-toggle" onclick="toggleTheme()">🌗 Tema</button>
+  </div>
+
+  <form id="ahorroForm">
+    <!-- PERIODO -->
+    <div class="form-group">
+      <span class="label">Periodo</span>
+      <div class="periodo-toggle" style="margin-bottom: 4px;">
+        <label><input type="radio" name="tipoPeriodo" value="INT" onchange="actualizarPeriodoUI()"> INT</label>
+        <label><input type="radio" name="tipoPeriodo" value="LISTA" checked onchange="actualizarPeriodoUI()"> Quincenal</label>
+      </div>
+      <select id="periodoSelect"></select>
+    </div>
+
+    <!-- APARTADO -->
+    <div class="form-group">
+      <span class="label">Apartado</span>
+      <div class="btn-grid grid-apartados" id="apartadoGrid"></div>
+    </div>
+
+    <!-- CUENTA Y TIPO (Lado a lado) -->
+    <div class="row-2">
+      <div class="form-group">
+        <span class="label">Cuenta</span>
+        <div class="btn-grid grid-cuentas" id="cuentaGrid"></div>
+      </div>
+      <div class="form-group">
+        <span class="label">Tipo</span>
+        <div class="btn-grid grid-tipo" id="tipoGrid"></div>
+      </div>
+    </div>
+
+    <!-- CANTIDAD Y FECHA -->
+    <div class="row-2">
+      <div class="form-group">
+        <span class="label">Cantidad ($)</span>
+        <input type="number" id="cantidad" step="0.01" min="0.01" placeholder="0.00" required>
+      </div>
+      <div class="form-group">
+        <span class="label">Fecha</span>
+        <input type="date" id="fecha" required>
+      </div>
+    </div>
+
+    <!-- COMENTARIO -->
+    <div class="form-group">
+      <span class="label">Comentario (Opcional)</span>
+      <div class="radio-group">
+        <label><input type="radio" name="comentarioOpt" value="" checked onclick="toggleOtroTexto(false)"> Ninguno</label>
+        <label><input type="radio" name="comentarioOpt" value="Intereses" onclick="toggleOtroTexto(false)"> Intereses</label>
+        <label><input type="radio" name="comentarioOpt" value="Transferencia" onclick="toggleOtroTexto(false)"> Transferencia</label>
+        <label><input type="radio" name="comentarioOpt" value="Otros" onclick="toggleOtroTexto(true)"> Otros</label>
+      </div>
+      <input type="text" id="comentarioOtro" placeholder="Escribe un comentario breve..." style="display: none;">
+    </div>
+
+    <button type="submit" class="submit-btn" id="btnGuardar">Guardar Ahorro</button>
+    <div id="status"></div>
+  </form>
+</div>
+
+<script>
+  // URL de Google Apps Script Web App
+  const WEB_APP_URL = "REEMPLAZAR_CON_TU_URL_DE_WEB_APP";
+
+  // Listas de datos
+  const APARTADOS = [
+    "Agua", "Ahorro", "Ahorro Pablito", "Ahorro Rikis", "Alimento Nena", "Apoyo hermanas",
+    "Bebbia", "Beca Pablito", "Cetina Rikis", "Cripto monedas", "Diezmo Pablito", "Diezmo Rikis",
+    "Escuela", "Gas", "Mantenimiento", "Pago LikeU", "Pago MP", "Personal y Hogar",
+    "Prima Seguro", "Ropa & accesorios niños", "Ropa & accesorios papás", "Servicios/Refacciones", "Viajes", "Otros"
+  ];
+
+  const CUENTAS = ["BC", "CT", "DD", "EF", "ET", "MD", "MP", "NB", "NU", "OP", "RV", "ST"];
+  const TIPOS = ["Retiro", "Abono"];
+
+  // Variables de selección
+  let selectedApartado = "";
+  let selectedCuenta = "";
+  let selectedTipo = "";
+
+  // Inicialización
+  document.addEventListener("DOMContentLoaded", () => {
+    renderGrids();
+    initFecha();
+    generarPeriodos();
+  });
+
+  // Tema Claro/Oscuro
+  function toggleTheme() {
+    const currentTheme = document.body.getAttribute("data-theme");
+    if (currentTheme === "dark") {
+      document.body.removeAttribute("data-theme");
+    } else {
+      document.body.setAttribute("data-theme", "dark");
+    }
+  }
+
+  // Renderizar grids de botones
+  function renderGrids() {
+    // Apartados
+    const apGrid = document.getElementById("apartadoGrid");
+    APARTADOS.forEach(ap => {
+      const btn = document.createElement("div");
+      btn.className = "grid-btn";
+      btn.innerText = ap;
+      btn.onclick = () => {
+        document.querySelectorAll("#apartadoGrid .grid-btn").forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+        selectedApartado = ap;
+      };
+      apGrid.appendChild(btn);
+    });
+
+    // Cuentas
+    const ctaGrid = document.getElementById("cuentaGrid");
+    CUENTAS.forEach(cta => {
+      const btn = document.createElement("div");
+      btn.className = "grid-btn";
+      btn.innerText = cta;
+      btn.onclick = () => {
+        document.querySelectorAll("#cuentaGrid .grid-btn").forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+        selectedCuenta = cta;
+      };
+      ctaGrid.appendChild(btn);
+    });
+
+    // Tipos
+    const tpGrid = document.getElementById("tipoGrid");
+    TIPOS.forEach(tp => {
+      const btn = document.createElement("div");
+      btn.className = "grid-btn";
+      btn.innerText = tp;
+      btn.onclick = () => {
+        document.querySelectorAll("#tipoGrid .grid-btn").forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+        selectedTipo = tp;
+      };
+      tpGrid.appendChild(btn);
+    });
+  }
+
+  // Configurar Fecha Actual
+  function initFecha() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById("fecha").value = today;
+  }
+
+  // Generar Lista de 26 Periodos Quincenales
+  function generarPeriodos() {
+    const select = document.getElementById("periodoSelect");
+    select.innerHTML = "";
+    const currentYear = new Date().getFullYear();
+    const today = new Date();
+
+    let defaultIndex = 0;
+
+    for (let i = 1; i <= 26; i++) {
+      const pNum = i < 10 ? `0${i}` : `${i}`;
+      const optionText = `P${pNum}-${currentYear}`;
+      const option = document.createElement("option");
+      option.value = optionText;
+      option.text = optionText;
+      select.appendChild(option);
+
+      // Estimación aproximada de periodo quincenal actual
+      const quincenaActual = Math.min(Math.ceil(((today.getMonth() * 2) + (today.getDate() > 15 ? 2 : 1))), 26);
+      if (i === quincenaActual) {
+        defaultIndex = i - 1;
+      }
+    }
+    select.selectedIndex = defaultIndex;
+  }
+
+  function actualizarPeriodoUI() {
+    const tipo = document.querySelector('input[name="tipoPeriodo"]:checked').value;
+    const select = document.getElementById("periodoSelect");
+    if (tipo === "INT") {
+      select.style.display = "none";
+    } else {
+      select.style.display = "block";
+    }
+  }
+
+  function toggleOtroTexto(show) {
+    const txt = document.getElementById("comentarioOtro");
+    txt.style.display = show ? "block" : "none";
+    if (!show) txt.value = "";
+  }
+
+  // Envío del Formulario
+  document.getElementById("ahorroForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    if (!selectedApartado) { alert("Por favor selecciona un Apartado."); return; }
+    if (!selectedCuenta) { alert("Por favor selecciona una Cuenta."); return; }
+    if (!selectedTipo) { alert("Por favor selecciona un Tipo (Retiro/Abono)."); return; }
+
+    // Obtener Periodo
+    const tipoPeriodo = document.querySelector('input[name="tipoPeriodo"]:checked').value;
+    const periodoVal = tipoPeriodo === "INT" ? "INT" : document.getElementById("periodoSelect").value;
+
+    // Obtener Comentario
+    const comRadio = document.querySelector('input[name="comentarioOpt"]:checked').value;
+    let comentarioVal = comRadio;
+    if (comRadio === "Otros") {
+      comentarioVal = document.getElementById("comentarioOtro").value.trim();
+    }
+
+    const cantidadVal = parseFloat(document.getElementById("cantidad").value);
+    const fechaVal = document.getElementById("fecha").value;
+
+    const payload = {
+      tipoFormulario: "Ahorro",
+      periodo: periodoVal,
+      apartado: selectedApartado,
+      cuenta: selectedCuenta,
+      tipo: selectedTipo,
+      cantidad: cantidadVal,
+      fecha: fechaVal,
+      comentario: comentarioVal
+    };
+
+    const statusDiv = document.getElementById("status");
+    const btnGuardar = document.getElementById("btnGuardar");
+
+    statusDiv.style.color = "var(--text)";
+    statusDiv.innerText = "Guardando en Google Sheets...";
+    btnGuardar.disabled = true;
+
+    fetch(WEB_APP_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    })
+    .then(() => {
+      statusDiv.style.color = "var(--accent)";
+      statusDiv.innerText = "¡Registro guardado con éxito!";
+      
+      // Limpieza de campos clave
+      document.getElementById("cantidad").value = "";
+      document.getElementById("comentarioOtro").value = "";
+      document.querySelectorAll(".grid-btn").forEach(b => b.classList.remove("selected"));
+      selectedApartado = "";
+      selectedCuenta = "";
+      selectedTipo = "";
+      btnGuardar.disabled = false;
+      setTimeout(() => { statusDiv.innerText = ""; }, 3000);
+    })
+    .catch(err => {
+      statusDiv.style.color = "red";
+      statusDiv.innerText = "Error al guardar. Intenta de nuevo.";
+      btnGuardar.disabled = false;
+    });
+  });
+</script>
+
+</body>
+</html>
