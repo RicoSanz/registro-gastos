@@ -72,7 +72,6 @@
       color: #475569;
     }
 
-    /* Botón Encender / Apagar Cámara */
     .btn-cam {
       background: #fee2e2;
       color: var(--danger);
@@ -89,11 +88,11 @@
       border-color: var(--border);
     }
 
-    /* Lector QR Centrado y Ajustado */
+    /* Contenedor Limpio sin deformación CSS */
     .scanner-wrapper {
       position: relative;
       width: 100%;
-      height: 170px;
+      min-height: 220px;
       background: #000;
       border-radius: 8px;
       overflow: hidden;
@@ -104,39 +103,14 @@
     }
 
     #reader {
-      width: 100% !important;
-      height: 100% !important;
+      width: 100%;
     }
 
+    /* Asegurar alineación directa de video sin desfasar coordenadas */
     #reader video {
       width: 100% !important;
-      height: 100% !important;
-      object-fit: cover !important;
-    }
-
-    /* Marcos y sombreados generados automáticamente ocultos completamente */
-    #reader #qr-shaded-region,
-    #reader img,
-    #reader canvas {
-      display: none !important;
-    }
-
-    /* Marco Custom de Centrado (NUEVO) */
-    .custom-qr-frame {
-      position: absolute;
-      width: 120px;
-      height: 120px;
-      border: 3px solid #22c55e;
-      border-radius: 12px;
-      box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.45);
-      pointer-events: none;
-      z-index: 10;
-      box-sizing: border-box;
-    }
-
-    .scanner-wrapper.flash-success .custom-qr-frame {
-      border-color: #ffffff;
-      box-shadow: 0 0 0 4000px rgba(22, 163, 74, 0.6);
+      height: auto !important;
+      border-radius: 6px;
     }
 
     .input-group {
@@ -163,7 +137,6 @@
       cursor: pointer;
     }
 
-    /* Ficha Alumno Compacta */
     .student-info {
       background: #f8fafc;
       padding: 8px 10px;
@@ -181,7 +154,6 @@
 
     .value { font-weight: 700; color: #1e293b; }
 
-    /* Formulario */
     .form-row {
       display: flex;
       gap: 8px;
@@ -235,12 +207,11 @@
     <div>
       <div class="card-header">
         <h2>Escanear QR</h2>
-        <button id="btnCamara" class="btn-cam" onclick="toggleCamara()">Desactivar Cámara</button>
+        <button id="btnCamara" class="btn-cam" onclick="toggleCamara()">Apagar Cámara</button>
       </div>
       
       <div id="scannerWrapper" class="scanner-wrapper">
         <div id="reader"></div>
-        <div class="custom-qr-frame"></div>
       </div>
       
       <div class="input-group">
@@ -251,7 +222,7 @@
     <div id="searchStatus" class="status-msg">Cargando base de datos...</div>
   </div>
 
-  <!-- Columna Derecha: Captura y Registro -->
+  <!-- Columna Derecha: Registro -->
   <div class="card">
     <div>
       <h2>Datos del Alumno</h2>
@@ -303,8 +274,8 @@
   let alumnosCache = [];
   let alumnoSeleccionado = null;
   let html5QrCode = null;
-  let escaneoBloqueado = false;
   let camaraActiva = false;
+  let enPausa = false;
 
   window.onload = function() {
     cargarBaseDeDatos();
@@ -339,7 +310,11 @@
       html5QrCode = new Html5Qrcode("reader");
     }
 
-    const config = { fps: 15 };
+    const config = { 
+      fps: 10,
+      qrbox: { width: 180, height: 180 },
+      aspectRatio: 1.0
+    };
 
     html5QrCode.start(
       { facingMode: "environment" }, 
@@ -348,6 +323,7 @@
       onScanFailure
     ).then(() => {
       camaraActiva = true;
+      enPausa = false;
       actualizarBotonCamara();
     }).catch(err => {
       console.error("Error al iniciar cámara:", err);
@@ -360,10 +336,9 @@
     if (html5QrCode && html5QrCode.isScanning) {
       html5QrCode.stop().then(() => {
         camaraActiva = false;
+        enPausa = false;
         actualizarBotonCamara();
-      }).catch(err => {
-        console.error("Error al detener cámara:", err);
-      });
+      }).catch(err => console.error(err));
     }
   }
 
@@ -378,21 +353,26 @@
   function actualizarBotonCamara() {
     const btn = document.getElementById('btnCamara');
     if (camaraActiva) {
-      btn.innerText = "Desactivar Cámara";
+      btn.innerText = "Apagar Cámara";
       btn.classList.remove('off');
     } else {
-      btn.innerText = "Activar Cámara";
+      btn.innerText = "Encender Cámara";
       btn.classList.add('off');
     }
   }
 
   function onScanSuccess(decodedText) {
-    if (escaneoBloqueado) return;
+    if (enPausa) return;
 
     const clave = decodedText.trim();
     if (!clave) return;
 
-    destacarCamara();
+    // Pausamos inmediatamente el procesamiento de video para no congelar la cámara
+    if (html5QrCode && html5QrCode.getState() === 2) { // 2 = SCANNING
+      html5QrCode.pause(true); // Pausa la decodificación y congela la vista
+      enPausa = true;
+    }
+
     if (navigator.vibrate) navigator.vibrate(80);
 
     procesarBusqueda(clave);
@@ -400,12 +380,16 @@
 
   function onScanFailure(error) {}
 
-  function destacarCamara() {
-    const wrapper = document.getElementById('scannerWrapper');
-    wrapper.classList.add('flash-success');
-    setTimeout(() => {
-      wrapper.classList.remove('flash-success');
-    }, 350);
+  function reanudarEscaner() {
+    if (html5QrCode && enPausa) {
+      try {
+        html5QrCode.resume();
+        enPausa = false;
+      } catch (e) {
+        console.warn("No se pudo reanudar directamente, reiniciando...", e);
+        html5QrCode.stop().then(() => iniciarEscaner());
+      }
+    }
   }
 
   function buscarManual() {
@@ -438,6 +422,13 @@
       limpiarDatosAlumno();
       status.style.color = "var(--danger)";
       status.innerText = `Sin registros para: ${clave}`;
+      
+      // Si la búsqueda no arroja resultados, reanudamos el escáner tras 1.5 segundos
+      setTimeout(() => {
+        status.innerText = "Listo para escanear.";
+        status.style.color = "inherit";
+        reanudarEscaner();
+      }, 1500);
     }
   }
 
@@ -453,8 +444,6 @@
     btn.disabled = true;
     saveStatus.style.color = "inherit";
     saveStatus.innerText = "Guardando...";
-
-    escaneoBloqueado = true;
 
     const script = document.createElement('script');
     const url = `${SCRIPT_URL}?action=guardar&noLista=${encodeURIComponent(alumnoSeleccionado.noLista)}` +
@@ -475,21 +464,21 @@
 
     if (response && response.exito) {
       saveStatus.style.color = "var(--success)";
-      saveStatus.innerText = "¡Guardado!";
+      saveStatus.innerText = "¡Guardado con éxito!";
 
       limpiarFormularioCompleto();
 
       setTimeout(() => {
         saveStatus.innerText = "";
         status.innerText = "Listo para escanear.";
-        escaneoBloqueado = false;
-      }, 1200);
+        status.style.color = "inherit";
+        reanudarEscaner(); // Reanuda la lectura limpia tras guardar
+      }, 1000);
 
     } else {
       saveStatus.style.color = "var(--danger)";
       saveStatus.innerText = "Error al guardar.";
       document.getElementById('btnGuardar').disabled = false;
-      escaneoBloqueado = false;
     }
   }
 
