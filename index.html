@@ -2,142 +2,194 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Asistencia - Edes Fase - Nivel 1</title>
-  <!-- Lector QR alternativo ultra rápido y compatible con celulares -->
-  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Control de Asistencia</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --bg: #f1f5f9;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --border: #cbd5e1;
+      --success: #16a34a;
+      --danger: #dc2626;
     }
-    
+
+    * { box-sizing: border-box; }
+
     body {
-      background-color: #f8f9fa;
-      color: #202124;
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 8px;
       display: flex;
       justify-content: center;
-      padding: 12px;
+      align-items: center;
+      min-height: 100vh;
     }
 
-    .container {
+    .main-grid {
       width: 100%;
-      max-width: 480px;
+      max-width: 820px;
+      display: grid;
+      grid-template-columns: 1fr 1.1fr;
+      gap: 10px;
+    }
+
+    @media (max-width: 640px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      padding: 12px;
+      border-radius: 10px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+      border: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      justify-content: space-between;
     }
 
-    header {
-      text-align: center;
-      padding: 4px 0;
-    }
-
-    h1 {
-      font-size: 1.2rem;
-      color: #1a73e8;
-      font-weight: 700;
-    }
-
-    .mode-selector {
+    .card-header {
       display: flex;
-      background-color: #e8eaed;
-      border-radius: 8px;
-      padding: 4px;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
     }
 
-    .mode-btn {
-      flex: 1;
-      padding: 10px;
-      text-align: center;
-      border: none;
-      background: none;
-      font-weight: bold;
-      font-size: 0.9rem;
+    h2 {
+      margin: 0;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #475569;
+    }
+
+    /* Botón Encender / Apagar Cámara */
+    .btn-cam {
+      background: #fee2e2;
+      color: var(--danger);
+      border: 1px solid #fca5a5;
+      padding: 4px 10px;
       border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
       cursor: pointer;
-      color: #5f6368;
+    }
+    .btn-cam.off {
+      background: #e2e8f0;
+      color: #334155;
+      border-color: var(--border);
     }
 
-    .mode-btn.active {
-      background-color: #ffffff;
-      color: #1a73e8;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-    }
-
-    .scanner-container {
+    /* Lector QR Centrado y Ajustado */
+    .scanner-wrapper {
       position: relative;
       width: 100%;
-      height: 250px;
-      background-color: #000;
-      border-radius: 12px;
+      height: 170px;
+      background: #000;
+      border-radius: 8px;
       overflow: hidden;
+      border: 2px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
-    video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+    #reader {
+      width: 100% !important;
+      height: 100% !important;
     }
 
-    .btn-camara {
+    #reader video {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+    }
+
+    /* Ocultar canvas o imágenes secundarias que genera la librería */
+    #reader #qr-shaded-region,
+    #reader img,
+    #reader canvas {
+      display: none !important;
+    }
+
+    /* Marco Custom de Centrado */
+    .custom-qr-frame {
       position: absolute;
-      background-color: #1a73e8;
-      color: white;
-      border: none;
-      padding: 12px 20px;
-      font-size: 0.95rem;
-      font-weight: bold;
-      border-radius: 8px;
-      cursor: pointer;
+      width: 130px;
+      height: 130px;
+      border: 3px solid #22c55e;
+      border-radius: 12px;
+      box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.45);
+      pointer-events: none;
       z-index: 10;
+      box-sizing: border-box;
     }
 
-    .manual-wrapper {
-      display: none;
-      background-color: #ffffff;
-      padding: 16px;
-      border-radius: 12px;
-      border: 1px solid #dadce0;
-      flex-direction: column;
-      gap: 8px;
+    .scanner-wrapper.flash-success .custom-qr-frame {
+      border-color: #ffffff;
+      box-shadow: 0 0 0 4000px rgba(22, 163, 74, 0.6);
     }
 
-    .manual-row {
+    .input-group {
       display: flex;
-      gap: 8px;
+      gap: 6px;
+      margin-top: 8px;
     }
 
-    .manual-row input {
-      flex: 1;
+    input[type="text"], select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.9rem;
     }
 
-    .btn-buscar-manual {
-      background-color: #1a73e8;
+    button.btn-search {
+      background-color: #475569;
       color: white;
       border: none;
-      padding: 0 16px;
-      border-radius: 8px;
-      font-weight: bold;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-weight: 600;
       cursor: pointer;
     }
 
-    .form-wrapper {
-      background: #ffffff;
-      padding: 16px;
-      border-radius: 12px;
-      border: 1px solid #dadce0;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+    /* Ficha Alumno Compacta */
+    .student-info {
+      background: #f8fafc;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      margin-bottom: 8px;
+      font-size: 0.85rem;
     }
 
-    .campo {
+    .student-info div {
+      display: flex;
+      justify-content: space-between;
+      padding: 2px 0;
+    }
+
+    .value { font-weight: 700; color: #1e293b; }
+
+    /* Formulario */
+    .form-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .form-group {
+      flex: 1;
       display: flex;
       flex-direction: column;
       gap: 4px;
@@ -146,336 +198,331 @@
     label {
       font-size: 0.75rem;
       font-weight: 700;
-      color: #5f6368;
+      color: #64748b;
       text-transform: uppercase;
     }
 
-    input[type="text"] {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #dadce0;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      background-color: #f1f3f4;
-      color: #202124;
-      font-weight: 600;
-    }
-
-    input[type="text"]:not([readonly]) {
-      background-color: #ffffff;
-    }
-
-    .row-doble {
-      display: flex;
-      gap: 8px;
-    }
-
-    .row-doble .campo {
-      flex: 1;
-    }
-
-    .tarea-toggle {
-      display: flex;
-      background-color: #f1f3f4;
-      border-radius: 8px;
-      padding: 3px;
-    }
-
-    .tarea-option {
-      flex: 1;
-      text-align: center;
-      padding: 10px 0;
-      font-weight: bold;
-      font-size: 0.9rem;
-      border-radius: 6px;
-      cursor: pointer;
-      color: #5f6368;
-    }
-
-    .tarea-option.active-si {
-      background-color: #1e8e3e;
-      color: white;
-    }
-
-    .tarea-option.active-no {
-      background-color: #d93025;
-      color: white;
-    }
-
-    .btn-guardar {
-      width: 100%;
-      padding: 14px;
-      background-color: #1a73e8;
+    .btn-save {
+      background-color: var(--primary);
       color: white;
       border: none;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: bold;
+      padding: 11px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-weight: 700;
       cursor: pointer;
+      width: 100%;
+      transition: background-color 0.2s;
     }
 
-    .btn-guardar:disabled {
-      background-color: #dadce0;
-      color: #80868b;
-      cursor: not-allowed;
-    }
+    .btn-save:hover { background-color: var(--primary-hover); }
+    .btn-save:disabled { background-color: #cbd5e1; cursor: not-allowed; }
 
-    #estado {
-      text-align: center;
-      font-size: 0.85rem;
-      font-weight: bold;
-      min-height: 20px;
+    .status-msg {
+      font-size: 0.8rem;
+      margin-top: 4px;
+      min-height: 1.1em;
+      font-weight: 600;
     }
-
-    .cargando { color: #f2990a; }
-    .exito { color: #1e8e3e; }
-    .error { color: #d93025; }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <header>
-      <h1>Edes Fase - Nivel 1</h1>
-      <p style="font-size: 0.8rem; color: #5f6368;">Control de Asistencia</p>
-    </header>
+<div class="main-grid">
 
-    <div class="mode-selector">
-      <button id="btnModoQR" class="mode-btn active" onclick="setModo('QR')">📷 Escáner QR</button>
-      <button id="btnModoManual" class="mode-btn" onclick="setModo('Manual')">⌨️ Entrada Manual</button>
-    </div>
-
-    <!-- Visor de Cámara -->
-    <div id="sectionQR" class="scanner-container">
-      <button id="btnEncenderCamara" class="btn-camara" onclick="iniciarCamara()">Iniciar Cámara</button>
-      <video id="video" playsinline></video>
-      <canvas id="canvas" hidden></canvas>
-    </div>
-
-    <!-- Entrada Manual (Backup) -->
-    <div id="sectionManual" class="manual-wrapper">
-      <label for="manualNoLista">Ingresar No. de Lista:</label>
-      <div class="manual-row">
-        <input type="text" id="manualNoLista" placeholder="Ej: 5" inputmode="numeric">
-        <button type="button" class="btn-buscar-manual" onclick="buscarManual()">Buscar</button>
+  <!-- Columna Izquierda: Escáner QR -->
+  <div class="card">
+    <div>
+      <div class="card-header">
+        <h2>Escanear QR</h2>
+        <button id="btnCamara" class="btn-cam" onclick="toggleCamara()">Desactivar Cámara</button>
+      </div>
+      
+      <div id="scannerWrapper" class="scanner-wrapper">
+        <div id="reader"></div>
+        <div class="custom-qr-frame"></div>
+      </div>
+      
+      <div class="input-group">
+        <input type="text" id="manualNoLista" placeholder="Clave manual (ej. E0002)">
+        <button class="btn-search" onclick="buscarManual()">Buscar</button>
       </div>
     </div>
-
-    <!-- Formulario -->
-    <form id="asistenciaForm" class="form-wrapper" onsubmit="event.preventDefault();">
-      <div class="campo">
-        <label for="noLista">No. Lista Seleccionado:</label>
-        <input type="text" id="noLista" readonly placeholder="---">
-      </div>
-
-      <div class="row-doble">
-        <div class="campo">
-          <label for="nombre">Nombre:</label>
-          <input type="text" id="nombre" readonly placeholder="---">
-        </div>
-        <div class="campo">
-          <label for="apellidos">Apellidos:</label>
-          <input type="text" id="apellidos" readonly placeholder="---">
-        </div>
-      </div>
-
-      <div class="campo">
-        <label>¿Hizo la tarea?</label>
-        <div class="tarea-toggle">
-          <div id="optSi" class="tarea-option active-si" onclick="setTarea('Sí')">SÍ</div>
-          <div id="optNo" class="tarea-option" onclick="setTarea('No')">NO</div>
-        </div>
-        <input type="hidden" id="hizoTarea" value="Sí">
-      </div>
-
-      <div id="estado"></div>
-
-      <button type="button" id="btnGuardar" class="btn-guardar" onclick="enviarAsistencia()" disabled>
-        REGISTRAR ASISTENCIA
-      </button>
-    </form>
+    <div id="searchStatus" class="status-msg">Cargando base de datos...</div>
   </div>
 
-  <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzm5dVqEwCQsrORdD0_tIONb7jlwSxE5ocyQTwC9vXL28I18E43m2fEdALNPJ5dmmjl/exec";
+  <!-- Columna Derecha: Captura y Registro -->
+  <div class="card">
+    <div>
+      <h2>Datos del Alumno</h2>
+      <div class="student-info">
+        <div><span>Clave:</span> <span id="infoNoLista" class="value">-</span></div>
+        <div><span>Nombre:</span> <span id="infoNombre" class="value">-</span></div>
+        <div><span>Apellidos:</span> <span id="infoApellidos" class="value">-</span></div>
+      </div>
 
-    let videoStream = null;
-    let scanning = false;
-    let buscando = false;
+      <div class="form-row">
+        <div class="form-group">
+          <label for="estatus">Estatus:</label>
+          <select id="estatus">
+            <option value="Asistencia">Asistencia</option>
+            <option value="Retardo">Retardo</option>
+            <option value="Falta">Falta</option>
+            <option value="Justificado">Justificado</option>
+          </select>
+        </div>
 
-    function setModo(modo) {
-      const btnQR = document.getElementById('btnModoQR');
-      const btnManual = document.getElementById('btnModoManual');
-      const secQR = document.getElementById('sectionQR');
-      const secManual = document.getElementById('sectionManual');
+        <div class="form-group">
+          <label for="tarea">Tarea:</label>
+          <select id="tarea">
+            <option value="Cumplió">Sí cumplió</option>
+            <option value="No entregó">No entregó</option>
+            <option value="Incompleta">Incompleta</option>
+            <option value="N/A">No aplica</option>
+          </select>
+        </div>
+      </div>
 
-      if (modo === 'QR') {
-        btnQR.className = "mode-btn active";
-        btnManual.className = "mode-btn";
-        secQR.style.display = "flex";
-        secManual.style.display = "none";
-      } else {
-        btnQR.className = "mode-btn";
-        btnManual.className = "mode-btn active";
-        secQR.style.display = "none";
-        secManual.style.display = "flex";
-        detenerCamara();
-      }
-      limpiarFormulario();
+      <div class="form-group" style="margin-bottom: 8px;">
+        <label for="observaciones">Observaciones:</label>
+        <input type="text" id="observaciones" placeholder="Opcional...">
+      </div>
+    </div>
+
+    <div>
+      <button id="btnGuardar" class="btn-save" onclick="guardarRegistro()" disabled>Guardar Asistencia</button>
+      <div id="saveStatus" class="status-msg"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzm5dVqEwCQsrORdD0_tIONb7jlwSxE5ocyQTwC9vXL28I18E43m2fEdALNPJ5dmmjl/exec";
+  
+  let alumnosCache = [];
+  let alumnoSeleccionado = null;
+  let html5QrCode = null;
+  let escaneoBloqueado = false;
+  let camaraActiva = false;
+
+  window.onload = function() {
+    cargarBaseDeDatos();
+    iniciarEscaner();
+  };
+
+  function cargarBaseDeDatos() {
+    const status = document.getElementById('searchStatus');
+    status.innerText = "Cargando lista de alumnos...";
+    
+    const script = document.createElement('script');
+    script.src = `${SCRIPT_URL}?action=obtenerTodos&callback=alumnosCargados`;
+    document.body.appendChild(script);
+  }
+
+  function alumnosCargados(data) {
+    const status = document.getElementById('searchStatus');
+    if (data && data.alumnos) {
+      alumnosCache = data.alumnos;
+      status.style.color = "var(--success)";
+      status.innerText = "Base de datos lista.";
+    } else {
+      status.style.color = "var(--danger)";
+      status.innerText = "Error al cargar la base de datos.";
+    }
+  }
+
+  function iniciarEscaner() {
+    if (html5QrCode && html5QrCode.isScanning) return;
+
+    if (!html5QrCode) {
+      html5QrCode = new Html5Qrcode("reader");
     }
 
-    function iniciarCamara() {
-      const video = document.getElementById('video');
-      document.getElementById('btnEncenderCamara').style.display = 'none';
-      mostrarEstado("Abriendo cámara...", "cargando");
-
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-        .then(function(stream) {
-          videoStream = stream;
-          video.srcObject = stream;
-          video.setAttribute("playsinline", true);
-          video.play();
-          scanning = true;
-          mostrarEstado("Apunta la cámara al código QR", "exito");
-          requestAnimationFrame(tick);
-        })
-        .catch(function(err) {
-          mostrarEstado("Error de cámara: Asegúrate de dar permisos.", "error");
-          document.getElementById('btnEncenderCamara').style.display = 'block';
-        });
-    }
-
-    function detenerCamara() {
-      scanning = false;
-      if (videoStream) {
-        videoStream.getTracks().forEach(track => track.stop());
-        videoStream = null;
-      }
-      document.getElementById('btnEncenderCamara').style.display = 'block';
-    }
-
-    function tick() {
-      if (!scanning) return;
-
-      const video = document.getElementById('video');
-      const canvas = document.getElementById('canvas');
-      const context = canvas.getContext('2d');
-
-      if (video.readyState === video.HAVE_ENOUGH_DATA) {
-        canvas.height = video.videoHeight;
-        canvas.width = video.videoWidth;
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
-        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-        const code = jsQR(imageData.data, imageData.width, imageData.height, {
-          inversionAttempts: "dontInvert",
-        });
-
-        if (code && code.data && !buscando) {
-          buscando = true;
-          document.getElementById('noLista').value = code.data;
-          solicitarDatosAlumno(code.data);
-        }
-      }
-      
-      if (scanning) {
-        requestAnimationFrame(tick);
-      }
-    }
-
-    function buscarManual() {
-      const valor = document.getElementById('manualNoLista').value.trim();
-      if (!valor) {
-        mostrarEstado("Ingresa un número de lista.", "error");
-        return;
-      }
-      buscando = true;
-      document.getElementById('noLista').value = valor;
-      solicitarDatosAlumno(valor);
-    }
-
-    // Búsqueda asegurando respuesta en JSON
-    function solicitarDatosAlumno(noLista) {
-      mostrarEstado("Buscando en la base de datos...", "cargando");
-
-      const url = `${WEB_APP_URL}?noLista=${encodeURIComponent(noLista)}`;
-
-      fetch(url, { method: "GET", redirect: "follow" })
-        .then(response => response.json())
-        .then(res => {
-          const btn = document.getElementById('btnGuardar');
-          if (res && res.encontrado) {
-            document.getElementById('nombre').value = res.nombre;
-            document.getElementById('apellidos').value = res.apellidos;
-            mostrarEstado(`Encontrado: ${res.nombre} ${res.apellidos}`, "exito");
-            btn.disabled = false;
-          } else {
-            document.getElementById('nombre').value = "";
-            document.getElementById('apellidos').value = "";
-            mostrarEstado(res.mensaje || "Alumno no encontrado.", "error");
-            btn.disabled = true;
-            setTimeout(() => { buscando = false; }, 2000);
-          }
-        })
-        .catch(err => {
-          mostrarEstado("Error al consultar la hoja de cálculo.", "error");
-          buscando = false;
-        });
-    }
-
-    function setTarea(valor) {
-      document.getElementById('hizoTarea').value = valor;
-      document.getElementById('optSi').className = valor === 'Sí' ? "tarea-option active-si" : "tarea-option";
-      document.getElementById('optNo').className = valor === 'No' ? "tarea-option active-no" : "tarea-option";
-    }
-
-    function enviarAsistencia() {
-      const btn = document.getElementById('btnGuardar');
-      btn.disabled = true;
-
-      const datos = {
-        noLista: document.getElementById('noLista').value,
-        nombre: document.getElementById('nombre').value,
-        apellidos: document.getElementById('apellidos').value,
-        hizoTarea: document.getElementById('hizoTarea').value
+    // Calculamos dinámicamente un cuadro centrado proporcional a la vista
+    const qrboxFunction = function(viewfinderWidth, viewfinderHeight) {
+      const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+      const edgeSize = Math.floor(minEdge * 0.7);
+      return {
+        width: edgeSize,
+        height: edgeSize
       };
+    };
 
-      mostrarEstado("Guardando registro...", "cargando");
+    const config = { 
+      fps: 15,
+      qrbox: qrboxFunction,
+      aspectRatio: 1.0
+    };
 
-      fetch(WEB_APP_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(datos)
-      })
-      .then(() => {
-        mostrarEstado("¡Asistencia registrada con éxito!", "exito");
-        setTimeout(() => {
-          limpiarFormulario();
-        }, 1500);
-      })
-      .catch(err => {
-        mostrarEstado("Error al guardar.", "error");
-        btn.disabled = false;
+    html5QrCode.start(
+      { facingMode: "environment" }, 
+      config, 
+      onScanSuccess, 
+      onScanFailure
+    ).then(() => {
+      camaraActiva = true;
+      actualizarBotonCamara();
+    }).catch(err => {
+      console.error("Error al iniciar cámara:", err);
+      camaraActiva = false;
+      actualizarBotonCamara();
+    });
+  }
+
+  function detenerEscaner() {
+    if (html5QrCode && html5QrCode.isScanning) {
+      html5QrCode.stop().then(() => {
+        camaraActiva = false;
+        actualizarBotonCamara();
+      }).catch(err => {
+        console.error("Error al detener cámara:", err);
       });
     }
+  }
 
-    function mostrarEstado(msg, tipo) {
-      const div = document.getElementById('estado');
-      div.innerText = msg;
-      div.className = tipo;
+  function toggleCamara() {
+    if (camaraActiva) {
+      detenerEscaner();
+    } else {
+      iniciarEscaner();
     }
+  }
 
-    function limpiarFormulario() {
-      document.getElementById('noLista').value = "";
-      document.getElementById('nombre').value = "";
-      document.getElementById('apellidos').value = "";
-      document.getElementById('manualNoLista').value = "";
-      setTarea('Sí');
-      document.getElementById('btnGuardar').disabled = true;
-      buscando = false;
-      mostrarEstado("", "");
+  function actualizarBotonCamara() {
+    const btn = document.getElementById('btnCamara');
+    if (camaraActiva) {
+      btn.innerText = "Desactivar Cámara";
+      btn.classList.remove('off');
+    } else {
+      btn.innerText = "Activar Cámara";
+      btn.classList.add('off');
     }
-  </script>
+  }
+
+  function onScanSuccess(decodedText) {
+    if (escaneoBloqueado) return;
+
+    const clave = decodedText.trim();
+    if (!clave) return;
+
+    destacarCamara();
+    if (navigator.vibrate) navigator.vibrate(80);
+
+    procesarBusqueda(clave);
+  }
+
+  function onScanFailure(error) {}
+
+  function destacarCamara() {
+    const wrapper = document.getElementById('scannerWrapper');
+    wrapper.classList.add('flash-success');
+    setTimeout(() => {
+      wrapper.classList.remove('flash-success');
+    }, 350);
+  }
+
+  function buscarManual() {
+    const input = document.getElementById('manualNoLista');
+    const clave = input.value.trim();
+    if (!clave) {
+      alert("Por favor ingresa una clave o número válido.");
+      return;
+    }
+    procesarBusqueda(clave);
+  }
+
+  function procesarBusqueda(clave) {
+    const status = document.getElementById('searchStatus');
+    status.style.color = "inherit";
+    status.innerText = "Buscando...";
+
+    const claveLimpia = clave.toUpperCase();
+    const alumno = alumnosCache.find(a => String(a.noLista).trim().toUpperCase() === claveLimpia);
+
+    if (alumno) {
+      alumnoSeleccionado = alumno;
+      document.getElementById('infoNoLista').innerText = alumno.noLista;
+      document.getElementById('infoNombre').innerText = alumno.nombre;
+      document.getElementById('infoApellidos').innerText = alumno.apellidos;
+      document.getElementById('btnGuardar').disabled = false;
+      status.style.color = "var(--success)";
+      status.innerText = "Alumno encontrado.";
+    } else {
+      limpiarDatosAlumno();
+      status.style.color = "var(--danger)";
+      status.innerText = `Sin registros para: ${clave}`;
+    }
+  }
+
+  function guardarRegistro() {
+    if (!alumnoSeleccionado) return;
+
+    const btn = document.getElementById('btnGuardar');
+    const saveStatus = document.getElementById('saveStatus');
+    const estatusVal = document.getElementById('estatus').value;
+    const tareaVal = document.getElementById('tarea').value;
+    const obsVal = document.getElementById('observaciones').value;
+
+    btn.disabled = true;
+    saveStatus.style.color = "inherit";
+    saveStatus.innerText = "Guardando...";
+
+    escaneoBloqueado = true;
+
+    const script = document.createElement('script');
+    const url = `${SCRIPT_URL}?action=guardar&noLista=${encodeURIComponent(alumnoSeleccionado.noLista)}` +
+                `&nombre=${encodeURIComponent(alumnoSeleccionado.nombre)}` +
+                `&apellidos=${encodeURIComponent(alumnoSeleccionado.apellidos)}` +
+                `&estatus=${encodeURIComponent(estatusVal)}` +
+                `&tarea=${encodeURIComponent(tareaVal)}` +
+                `&observaciones=${encodeURIComponent(obsVal)}` +
+                `&callback=registroGuardado`;
+
+    script.src = url;
+    document.body.appendChild(script);
+  }
+
+  function registroGuardado(response) {
+    const saveStatus = document.getElementById('saveStatus');
+    const status = document.getElementById('searchStatus');
+
+    if (response && response.exito) {
+      saveStatus.style.color = "var(--success)";
+      saveStatus.innerText = "¡Guardado!";
+
+      limpiarFormularioCompleto();
+
+      setTimeout(() => {
+        saveStatus.innerText = "";
+        status.innerText = "Listo para escanear.";
+        escaneoBloqueado = false;
+      }, 1200);
+
+    } else {
+      saveStatus.style.color = "var(--danger)";
+      saveStatus.innerText = "Error al guardar.";
+      document.getElementById('btnGuardar').disabled = false;
+      escaneoBloqueado = false;
+    }
+  }
+
+  function limpiarDatosAlumno() {
+    alumnoSeleccionado = null;
+    document.getElementById('infoNoLista').innerText = "-";
+    document.getElementById('infoNombre').innerText = "-";
+    document.getElementById('infoApellidos').innerText = "-";
+    document.getElementById('btnGuardar').disabled = true;
+  }
+
+  function limpiarFormularioCompleto() {
+    limpiarDatosAlumno();
+    document.getElementById('manualNoLista').value = "";
+    document.getElementById('observaciones').value = "";
+    document.getElementById('estatus').value = "Asistencia";
+    document.getElementById('tarea').value = "Cumplió";
+  }
+</script>
+
 </body>
 </html>
