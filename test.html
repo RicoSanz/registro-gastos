@@ -74,37 +74,38 @@
 
     /* Botón Encender / Apagar Cámara */
     .btn-cam {
-      background: #e2e8f0;
-      color: #334155;
-      border: 1px solid var(--border);
+      background: #fee2e2;
+      color: var(--danger);
+      border: 1px solid #fca5a5;
       padding: 4px 10px;
       border-radius: 6px;
       font-size: 0.75rem;
       font-weight: 700;
       cursor: pointer;
     }
-    .btn-cam.active {
-      background: #fee2e2;
-      color: var(--danger);
-      border-color: #fca5a5;
+    .btn-cam.off {
+      background: #e2e8f0;
+      color: #334155;
+      border-color: var(--border);
     }
 
-    /* Lector QR - Corrección de alineación del recuadro */
+    /* Lector QR Centrado y Ajustado */
     .scanner-wrapper {
       position: relative;
       width: 100%;
-      height: 180px;
+      height: 170px;
       background: #000;
       border-radius: 8px;
       overflow: hidden;
       border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     #reader {
       width: 100% !important;
       height: 100% !important;
-      border: none !important;
-      position: relative;
     }
 
     #reader video {
@@ -113,22 +114,29 @@
       object-fit: cover !important;
     }
 
-    /* Ocultar elementos estáticos internos que causan desfasamiento */
-    #reader __status_span { display: none !important; }
-    #reader img { display: none !important; }
-    
-    /* Centrado forzado del marco guía generado por la librería */
-    #reader #qr-shaded-region {
-      position: absolute !important;
-      top: 50% !important;
-      left: 50% !important;
-      transform: translate(-50%, -50%) !important;
-      margin: 0 !important;
+    /* Marcos y sombreados generados automáticamente ocultos completamente */
+    #reader #qr-shaded-region,
+    #reader img,
+    #reader canvas {
+      display: none !important;
     }
 
-    #reader.flash-success {
-      border: 3px solid var(--success) !important;
-      box-shadow: 0 0 12px rgba(22, 163, 74, 0.7);
+    /* Marco Custom de Centrado (NUEVO) */
+    .custom-qr-frame {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      border: 3px solid #22c55e;
+      border-radius: 12px;
+      box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.45);
+      pointer-events: none;
+      z-index: 10;
+      box-sizing: border-box;
+    }
+
+    .scanner-wrapper.flash-success .custom-qr-frame {
+      border-color: #ffffff;
+      box-shadow: 0 0 0 4000px rgba(22, 163, 74, 0.6);
     }
 
     .input-group {
@@ -230,8 +238,9 @@
         <button id="btnCamara" class="btn-cam" onclick="toggleCamara()">Desactivar Cámara</button>
       </div>
       
-      <div class="scanner-wrapper">
+      <div id="scannerWrapper" class="scanner-wrapper">
         <div id="reader"></div>
+        <div class="custom-qr-frame"></div>
       </div>
       
       <div class="input-group">
@@ -293,9 +302,9 @@
   
   let alumnosCache = [];
   let alumnoSeleccionado = null;
-  let html5QrcodeScanner = null;
+  let html5QrCode = null;
   let escaneoBloqueado = false;
-  let camaraActiva = true;
+  let camaraActiva = false;
 
   window.onload = function() {
     cargarBaseDeDatos();
@@ -324,30 +333,36 @@
   }
 
   function iniciarEscaner() {
-    if (html5QrcodeScanner) return;
+    if (html5QrCode && html5QrCode.isScanning) return;
 
-    html5QrcodeScanner = new Html5QrcodeScanner(
-      "reader", 
-      { 
-        fps: 15, 
-        qrbox: { width: 120, height: 120 },
-        aspectRatio: 1.0
-      },
-      /* verbose= */ false
-    );
-    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
-    camaraActiva = true;
-    actualizarBotonCamara();
+    if (!html5QrCode) {
+      html5QrCode = new Html5Qrcode("reader");
+    }
+
+    const config = { fps: 15 };
+
+    html5QrCode.start(
+      { facingMode: "environment" }, 
+      config, 
+      onScanSuccess, 
+      onScanFailure
+    ).then(() => {
+      camaraActiva = true;
+      actualizarBotonCamara();
+    }).catch(err => {
+      console.error("Error al iniciar cámara:", err);
+      camaraActiva = false;
+      actualizarBotonCamara();
+    });
   }
 
   function detenerEscaner() {
-    if (html5QrcodeScanner) {
-      html5QrcodeScanner.clear().then(() => {
-        html5QrcodeScanner = null;
+    if (html5QrCode && html5QrCode.isScanning) {
+      html5QrCode.stop().then(() => {
         camaraActiva = false;
         actualizarBotonCamara();
       }).catch(err => {
-        console.error("Error al detener la cámara:", err);
+        console.error("Error al detener cámara:", err);
       });
     }
   }
@@ -364,10 +379,10 @@
     const btn = document.getElementById('btnCamara');
     if (camaraActiva) {
       btn.innerText = "Desactivar Cámara";
-      btn.classList.add('active');
+      btn.classList.remove('off');
     } else {
       btn.innerText = "Activar Cámara";
-      btn.classList.remove('active');
+      btn.classList.add('off');
     }
   }
 
@@ -386,10 +401,10 @@
   function onScanFailure(error) {}
 
   function destacarCamara() {
-    const readerEl = document.getElementById('reader');
-    readerEl.classList.add('flash-success');
+    const wrapper = document.getElementById('scannerWrapper');
+    wrapper.classList.add('flash-success');
     setTimeout(() => {
-      readerEl.classList.remove('flash-success');
+      wrapper.classList.remove('flash-success');
     }, 350);
   }
 
