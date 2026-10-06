@@ -71,7 +71,7 @@
       margin-top: 12px;
     }
 
-    input[type="number"], select, textarea {
+    input[type="text"], select, textarea {
       width: 100%;
       padding: 10px 12px;
       border: 1px solid var(--border);
@@ -147,7 +147,7 @@
     <div id="reader"></div>
     
     <div class="input-group">
-      <input type="number" id="manualNoLista" placeholder="N° de lista manual" min="1">
+      <input type="text" id="manualNoLista" placeholder="N° o Clave manual (ej. E0002)">
       <button onclick="buscarManual()">Buscar</button>
     </div>
     <div id="searchStatus" class="status-msg">Cargando base de datos...</div>
@@ -157,7 +157,7 @@
   <div class="card">
     <h2>Datos del Alumno</h2>
     <div class="student-info">
-      <div><span>N° Lista:</span> <span id="infoNoLista" class="value">-</span></div>
+      <div><span>Clave / N°:</span> <span id="infoNoLista" class="value">-</span></div>
       <div><span>Nombre:</span> <span id="infoNombre" class="value">-</span></div>
       <div><span>Apellidos:</span> <span id="infoApellidos" class="value">-</span></div>
     </div>
@@ -193,7 +193,6 @@
   let html5QrcodeScanner = null;
   let escaneoBloqueado = false;
 
-  // Precargar lista completa de alumnos al iniciar la página
   window.onload = function() {
     cargarBaseDeDatos();
     iniciarEscaner();
@@ -203,7 +202,6 @@
     const status = document.getElementById('searchStatus');
     status.innerText = "Cargando lista de alumnos...";
     
-    // Llamada JSONP para obtener la lista entera
     const script = document.createElement('script');
     script.src = `${SCRIPT_URL}?action=obtenerTodos&callback=alumnosCargados`;
     document.body.appendChild(script);
@@ -214,10 +212,10 @@
     if (data && data.alumnos) {
       alumnosCache = data.alumnos;
       status.style.color = "var(--success)";
-      status.innerText = "Listo para escanear.";
+      status.innerText = "Base de datos lista.";
     } else {
       status.style.color = "red";
-      status.innerText = "Error al cargar base de datos.";
+      status.innerText = "Error al cargar la base de datos.";
     }
   }
 
@@ -233,20 +231,18 @@
   function onScanSuccess(decodedText) {
     if (escaneoBloqueado) return;
 
-    // Normalizar número leído del QR
-    const noLista = parseInt(decodedText.trim(), 10);
-    if (isNaN(noLista)) return;
+    // Normalizar texto leído (ej. "E0002")
+    const clave = decodedText.trim();
+    if (!clave) return;
 
-    // Feedback visual y táctil
     destacarCamara();
     if (navigator.vibrate) navigator.vibrate(100);
 
-    // Buscar en caché instantáneamente
-    procesarBusqueda(noLista);
+    procesarBusqueda(clave);
   }
 
   function onScanFailure(error) {
-    // Lecturas fallidas continuas (comportamiento normal de la cámara)
+    // Escaneando marco por marco
   }
 
   function destacarCamara() {
@@ -259,21 +255,22 @@
 
   function buscarManual() {
     const input = document.getElementById('manualNoLista');
-    const noLista = parseInt(input.value, 10);
-    if (!noLista) {
-      alert("Por favor ingresa un número de lista válido.");
+    const clave = input.value.trim();
+    if (!clave) {
+      alert("Por favor ingresa una clave o número válido.");
       return;
     }
-    procesarBusqueda(noLista);
+    procesarBusqueda(clave);
   }
 
-  function procesarBusqueda(noLista) {
+  function procesarBusqueda(clave) {
     const status = document.getElementById('searchStatus');
     status.style.color = "inherit";
     status.innerText = "Buscando...";
 
-    // Buscar en el arreglo en memoria
-    const alumno = alumnosCache.find(a => parseInt(a.noLista, 10) === noLista);
+    // Comparación insensible a mayúsculas/minúsculas
+    const claveLimpia = clave.toUpperCase();
+    const alumno = alumnosCache.find(a => String(a.noLista).trim().toUpperCase() === claveLimpia);
 
     if (alumno) {
       alumnoSeleccionado = alumno;
@@ -286,7 +283,7 @@
     } else {
       limpiarDatosAlumno();
       status.style.color = "red";
-      status.innerText = `No existe el N° de lista ${noLista}.`;
+      status.innerText = `No se encontró la clave: ${clave}`;
     }
   }
 
@@ -302,10 +299,8 @@
     saveStatus.style.color = "inherit";
     saveStatus.innerText = "Guardando registro...";
 
-    // Bloqueamos escaneos momentáneamente
     escaneoBloqueado = true;
 
-    // Guardado por JSONP
     const script = document.createElement('script');
     const url = `${SCRIPT_URL}?action=guardar&noLista=${encodeURIComponent(alumnoSeleccionado.noLista)}` +
                 `&nombre=${encodeURIComponent(alumnoSeleccionado.nombre)}` +
@@ -326,14 +321,13 @@
       saveStatus.style.color = "var(--success)";
       saveStatus.innerText = "¡Registro guardado con éxito!";
 
-      // Limpiar formulario completo
       limpiarFormularioCompleto();
 
       setTimeout(() => {
         saveStatus.innerText = "";
         status.innerText = "Listo para escanear.";
         escaneoBloqueado = false;
-      }, 1800);
+      }, 1500);
 
     } else {
       saveStatus.style.color = "red";
