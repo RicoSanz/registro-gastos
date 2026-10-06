@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Asistencia - Edes Fase - Nivel 1</title>
-  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -66,16 +66,35 @@
       box-shadow: 0 1px 3px rgba(0,0,0,0.12);
     }
 
-    .scanner-wrapper {
+    .scanner-container {
+      position: relative;
       width: 100%;
-      background-color: #ffffff;
+      height: 250px;
+      background-color: #000;
       border-radius: 12px;
-      padding: 8px;
-      border: 1px solid #dadce0;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    #reader {
+    video {
       width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .btn-camara {
+      position: absolute;
+      background-color: #1a73e8;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      z-index: 10;
     }
 
     .manual-wrapper {
@@ -225,9 +244,11 @@
       <button id="btnModoManual" class="mode-btn" onclick="setModo('Manual')">⌨️ Entrada Manual</button>
     </div>
 
-    <!-- Escáner QR -->
-    <div id="sectionQR" class="scanner-wrapper">
-      <div id="reader"></div>
+    <!-- Escáner de Cámara -->
+    <div id="sectionQR" class="scanner-container">
+      <button id="btnEncenderCamara" class="btn-camara" onclick="iniciarCamara()">Encender Cámara</button>
+      <video id="video" playsinline></video>
+      <canvas id="canvas" hidden></canvas>
     </div>
 
     <!-- Entrada Manual (Backup) -->
@@ -277,20 +298,9 @@
   <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzm5dVqEwCQsrORdD0_tIONb7jlwSxE5ocyQTwC9vXL28I18E43m2fEdALNPJ5dmmjl/exec";
 
-    let html5QrcodeScanner = null;
+    let videoStream = null;
+    let scanning = false;
     let buscando = false;
-
-    // Inicializar lector QR
-    function initScanner() {
-      if (!html5QrcodeScanner) {
-        html5QrcodeScanner = new Html5QrcodeScanner(
-          "reader",
-          { fps: 10, qrbox: { width: 200, height: 200 } },
-          /* verbose= */ false
-        );
-        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
-      }
-    }
 
     function setModo(modo) {
       const btnQR = document.getElementById('btnModoQR');
@@ -301,32 +311,81 @@
       if (modo === 'QR') {
         btnQR.className = "mode-btn active";
         btnManual.className = "mode-btn";
-        secQR.style.display = "block";
+        secQR.style.display = "flex";
         secManual.style.display = "none";
       } else {
         btnQR.className = "mode-btn";
         btnManual.className = "mode-btn active";
         secQR.style.display = "none";
         secManual.style.display = "flex";
+        detenerCamara();
       }
       limpiarFormulario();
     }
 
-    function onScanSuccess(decodedText) {
-      if (buscando) return;
-      buscando = true;
-      document.getElementById('noLista').value = decodedText;
-      solicitarDatosAlumno(decodedText);
+    function iniciarCamara() {
+      const video = document.getElementById('video');
+      document.getElementById('btnEncenderCamara').style.display = 'none';
+      mostrarEstado("Abriendo cámara...", "cargando");
+
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+        .then(function(stream) {
+          videoStream = stream;
+          video.srcObject = stream;
+          video.setAttribute("playsinline", true);
+          video.play();
+          scanning = true;
+          mostrarEstado("Apunta al código QR", "exito");
+          requestAnimationFrame(tick);
+        })
+        .catch(function(err) {
+          mostrarEstado("Error al abrir cámara.", "error");
+          document.getElementById('btnEncenderCamara').style.display = 'block';
+        });
     }
 
-    function onScanFailure(error) {
-      // Ignorar errores de escaneo continuo
+    function detenerCamara() {
+      scanning = false;
+      if (videoStream) {
+        videoStream.getTracks().forEach(track => track.stop());
+        videoStream = null;
+      }
+      document.getElementById('btnEncenderCamara').style.display = 'block';
+    }
+
+    function tick() {
+      if (!scanning) return;
+
+      const video = document.getElementById('video');
+      const canvas = document.getElementById('canvas');
+      const context = canvas.getContext('2d');
+
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvas.height = video.videoHeight;
+        canvas.width = video.videoWidth;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height, {
+          inversionAttempts: "dontInvert",
+        });
+
+        if (code && code.data && !buscando) {
+          buscando = true;
+          document.getElementById('noLista').value = code.data;
+          solicitarDatosAlumno(code.data);
+        }
+      }
+      
+      if (scanning) {
+        requestAnimationFrame(tick);
+      }
     }
 
     function buscarManual() {
       const valor = document.getElementById('manualNoLista').value.trim();
       if (!valor) {
-        mostrarEstado("Ingresa un número de lista válido.", "error");
+        mostrarEstado("Ingresa un número de lista.", "error");
         return;
       }
       buscando = true;
@@ -334,34 +393,45 @@
       solicitarDatosAlumno(valor);
     }
 
-    // Solución al problema de CORS/Redirección en Apps Script
+    // BÚSQUEDA MEDIANTE JSONP (Inyección dinámica de script)
     function solicitarDatosAlumno(noLista) {
-      mostrarEstado("Buscando alumno...", "cargando");
+      mostrarEstado("Buscando en la lista...", "cargando");
 
-      const url = `${WEB_APP_URL}?noLista=${encodeURIComponent(noLista)}`;
+      // Eliminar scripts de consultas anteriores
+      const oldScript = document.getElementById('jsonpScript');
+      if (oldScript) oldScript.remove();
 
-      fetch(url, { redirect: "follow" })
-        .then(response => response.json())
-        .then(res => {
-          const btn = document.getElementById('btnGuardar');
-          if (res.encontrado) {
-            document.getElementById('nombre').value = res.nombre;
-            document.getElementById('apellidos').value = res.apellidos;
-            mostrarEstado(`Alumno: ${res.nombre} ${res.apellidos}`, "exito");
-            btn.disabled = false;
-          } else {
-            document.getElementById('nombre').value = "";
-            document.getElementById('apellidos').value = "";
-            mostrarEstado(res.mensaje || "Alumno no encontrado.", "error");
-            btn.disabled = true;
-          }
-          buscando = false;
-        })
-        .catch(err => {
-          mostrarEstado("Error al conectar con la base de datos.", "error");
-          buscando = false;
-        });
+      // Crear petición JSONP
+      const script = document.createElement('script');
+      script.id = 'jsonpScript';
+      script.src = `${WEB_APP_URL}?noLista=${encodeURIComponent(noLista)}&callback=procesarRespuestaAlumno`;
+
+      script.onerror = function() {
+        mostrarEstado("Error al conectar con la hoja de cálculo.", "error");
+        buscando = false;
+      };
+
+      document.body.appendChild(script);
     }
+
+    // Función de respuesta global que invoca el JSONP
+    window.procesarRespuestaAlumno = function(res) {
+      const btn = document.getElementById('btnGuardar');
+      
+      if (res && res.encontrado) {
+        document.getElementById('nombre').value = res.nombre;
+        document.getElementById('apellidos').value = res.apellidos;
+        mostrarEstado(`Alumno: ${res.nombre} ${res.apellidos}`, "exito");
+        btn.disabled = false;
+      } else {
+        document.getElementById('nombre').value = "";
+        document.getElementById('apellidos').value = "";
+        mostrarEstado(res ? res.mensaje : "Alumno no encontrado.", "error");
+        btn.disabled = true;
+        // Permite reintentar otro QR tras 2 segundos si falló la búsqueda
+        setTimeout(() => { buscando = false; }, 2000);
+      }
+    };
 
     function setTarea(valor) {
       document.getElementById('hizoTarea').value = valor;
@@ -400,6 +470,12 @@
       });
     }
 
+    function mostrarEstado(msg, tipo) {
+      const div = document.getElementById('estado');
+      div.innerText = msg;
+      div.className = tipo;
+    }
+
     function limpiarFormulario() {
       document.getElementById('noLista').value = "";
       document.getElementById('nombre').value = "";
@@ -410,9 +486,6 @@
       buscando = false;
       mostrarEstado("", "");
     }
-
-    // Iniciar escáner al cargar la página
-    window.onload = initScanner;
   </script>
 </body>
 </html>
