@@ -1,1106 +1,481 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de gastos 2026 - v1.5</title>
-    <style>
-        :root {
-            --bg-body: #f0f4f8;
-            --bg-card: #ffffff;
-            --text-main: #0f172a;
-            --text-title: #1e293b;
-            --text-label: #475569;
-            --border-input: #cbd5e1;
-            --bg-input: #f8fafc;
-            --bg-input-focus: #ffffff;
-            --bg-btn-toggle: #f1f5f9;
-            --text-btn-toggle: #475569;
-            --shadow-card: rgba(0, 0, 0, 0.06);
-            --bg-calc-overlay: rgba(0, 0, 0, 0.4);
-            --bg-calc-modal: #ffffff;
-            --bg-calc-screen: #f1f3f4;
-            --border-calc-screen: #dadce0;
-            --text-calc-history: #70757a;
-            --text-calc-output: #202124;
-            --bg-calc-num: #f1f3f4;
-            --text-calc-num: #202124;
-            --bg-apartado-box: #f8fafc;
-            --border-apartado-box: #94a3b8;
-            --bg-radio-container: #f1f5f9;
-            --bg-gasto-input: #edf2f7;
-            --text-gasto-input: #1e293b;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asistencia - Edes Fase - Nivel 1</title>
+  <!-- Lector QR alternativo ultra rápido y compatible con celulares -->
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    
+    body {
+      background-color: #f8f9fa;
+      color: #202124;
+      display: flex;
+      justify-content: center;
+      padding: 12px;
+    }
 
-        body.dark-mode {
-            --bg-body: #0f172a;
-            --bg-card: #1e293b;
-            --text-main: #f8fafc;
-            --text-title: #f1f5f9;
-            --text-label: #94a3b8;
-            --border-input: #334155;
-            --bg-input: #0f172a;
-            --bg-input-focus: #1e293b;
-            --bg-btn-toggle: #334155;
-            --text-btn-toggle: #cbd5e1;
-            --shadow-card: rgba(0, 0, 0, 0.4);
-            --bg-calc-overlay: rgba(0, 0, 0, 0.7);
-            --bg-calc-modal: #1e293b;
-            --bg-calc-screen: #0f172a;
-            --border-calc-screen: #334155;
-            --text-calc-history: #94a3b8;
-            --text-calc-output: #f8fafc;
-            --bg-calc-num: #334155;
-            --text-calc-num: #f8fafc;
-            --bg-apartado-box: #0f172a;
-            --border-apartado-box: #475569;
-            --bg-radio-container: #334155;
-            --bg-gasto-input: #0f172a;
-            --text-gasto-input: #f8fafc;
-        }
+    .container {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-        }
+    header {
+      text-align: center;
+      padding: 4px 0;
+    }
 
-        body {
-            background-color: var(--bg-body);
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            min-height: 100vh;
-            padding: 8px;
-        }
+    h1 {
+      font-size: 1.2rem;
+      color: #1a73e8;
+      font-weight: 700;
+    }
 
-        .container {
-            background-color: var(--bg-card);
-            width: 100%;
-            max-width: 440px;
-            padding: 12px 14px;
-            border-radius: 12px;
-            box-shadow: 0 2px 12px var(--shadow-card);
-            position: relative;
-        }
+    .mode-selector {
+      display: flex;
+      background-color: #e8eaed;
+      border-radius: 8px;
+      padding: 4px;
+    }
 
-        .header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
+    .mode-btn {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      border: none;
+      background: none;
+      font-weight: bold;
+      font-size: 0.9rem;
+      border-radius: 6px;
+      cursor: pointer;
+      color: #5f6368;
+    }
 
-        h2 {
-            color: var(--text-title);
-            font-weight: 700;
-            font-size: 16px;
-            margin: 0;
-        }
+    .mode-btn.active {
+      background-color: #ffffff;
+      color: #1a73e8;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    }
 
-        .theme-toggle-btn {
-            background: none;
-            border: none;
-            font-size: 16px;
-            cursor: pointer;
-            padding: 4px;
-            border-radius: 50%;
-            line-height: 1;
-        }
+    .scanner-container {
+      position: relative;
+      width: 100%;
+      height: 250px;
+      background-color: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-        .form-row {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
 
-        .form-row .form-group {
-            flex: 1;
-            margin-bottom: 0;
-        }
+    .btn-camara {
+      position: absolute;
+      background-color: #1a73e8;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      z-index: 10;
+    }
 
-        .form-group {
-            margin-bottom: 8px;
-        }
+    .manual-wrapper {
+      display: none;
+      background-color: #ffffff;
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid #dadce0;
+      flex-direction: column;
+      gap: 8px;
+    }
 
-        label {
-            display: block;
-            margin-bottom: 2px;
-            color: var(--text-label);
-            font-size: 11px;
-            font-weight: 600;
-        }
+    .manual-row {
+      display: flex;
+      gap: 8px;
+    }
 
-        input, select, textarea {
-            width: 100%;
-            padding: 7px 9px;
-            border: 1.5px solid var(--border-input);
-            border-radius: 6px;
-            font-size: 14px;
-            color: var(--text-main);
-            background-color: var(--bg-input);
-            color-scheme: light;
-            -webkit-appearance: none;
-        }
+    .manual-row input {
+      flex: 1;
+    }
 
-        body.dark-mode input, 
-        body.dark-mode select, 
-        body.dark-mode textarea {
-            color-scheme: dark;
-        }
+    .btn-buscar-manual {
+      background-color: #1a73e8;
+      color: white;
+      border: none;
+      padding: 0 16px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+    }
 
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #3b82f6;
-            background-color: var(--bg-input-focus);
-        }
+    .form-wrapper {
+      background: #ffffff;
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid #dadce0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
 
-        #gasto {
-            background-color: var(--bg-gasto-input) !important;
-            color: var(--text-gasto-input) !important;
-            caret-color: transparent;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 16px;
-        }
+    .campo {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
 
-        textarea {
-            resize: none;
-            height: 36px;
-            font-size: 13px;
-        }
+    label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #5f6368;
+      text-transform: uppercase;
+    }
 
-        /* Grid para botones de Cuenta (7 columnas) */
-        .btn-group-toggle-cuenta {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 4px;
-        }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #dadce0;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      background-color: #f1f3f4;
+      color: #202124;
+      font-weight: 600;
+    }
 
-        /* Grid para botones de Cuenta de Ahorro (6 columnas) */
-        .btn-group-toggle-ahorro {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 4px;
-        }
+    input[type="text"]:not([readonly]) {
+      background-color: #ffffff;
+    }
 
-        .btn-toggle {
-            padding: 5px 0;
-            background-color: var(--bg-btn-toggle);
-            border: 1px solid var(--border-input);
-            border-radius: 6px;
-            color: var(--text-btn-toggle);
-            font-size: 11px;
-            font-weight: 700;
-            text-align: center;
-            cursor: pointer;
-            user-select: none;
-        }
+    .row-doble {
+      display: flex;
+      gap: 8px;
+    }
 
-        .btn-toggle.active {
-            background-color: #3b82f6;
-            border-color: #3b82f6;
-            color: #ffffff;
-        }
+    .row-doble .campo {
+      flex: 1;
+    }
 
-        /* Grid Fijo de Categorías */
-        .categorias-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 4px;
-            padding: 2px 0;
-        }
+    .tarea-toggle {
+      display: flex;
+      background-color: #f1f3f4;
+      border-radius: 8px;
+      padding: 3px;
+    }
 
-        .btn-categoria {
-            padding: 5px 2px;
-            background-color: var(--bg-btn-toggle);
-            border: 1px solid var(--border-input);
-            border-radius: 6px;
-            color: var(--text-btn-toggle);
-            font-size: 11.5px;
-            font-weight: 700;
-            text-align: center;
-            cursor: pointer;
-            user-select: none;
-        }
+    .tarea-option {
+      flex: 1;
+      text-align: center;
+      padding: 10px 0;
+      font-weight: bold;
+      font-size: 0.9rem;
+      border-radius: 6px;
+      cursor: pointer;
+      color: #5f6368;
+    }
 
-        .btn-categoria.active {
-            background-color: #3b82f6;
-            border-color: #3b82f6;
-            color: #ffffff;
-        }
+    .tarea-option.active-si {
+      background-color: #1e8e3e;
+      color: white;
+    }
 
-        /* Contenedor de Conceptos - Grid de 3 Columnas sin Scroll */
-        .conceptos-container {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 4px;
-            border: 1.5px solid var(--border-input);
-            padding: 6px;
-            border-radius: 6px;
-            background-color: var(--bg-input);
-        }
+    .tarea-option.active-no {
+      background-color: #d93025;
+      color: white;
+    }
 
-        .btn-concepto {
-            text-align: center;
-            padding: 5px 2px;
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-input);
-            border-radius: 4px;
-            color: var(--text-main);
-            font-size: 11px;
-            font-weight: 600;
-            cursor: pointer;
-            user-select: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 28px;
-        }
+    .btn-guardar {
+      width: 100%;
+      padding: 14px;
+      background-color: #1a73e8;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
 
-        .btn-concepto.active {
-            background-color: #6366f1;
-            border-color: #6366f1;
-            color: #ffffff;
-        }
+    .btn-guardar:disabled {
+      background-color: #dadce0;
+      color: #80868b;
+      cursor: not-allowed;
+    }
 
-        .btn-concepto.disabled {
-            grid-column: span 3;
-            background-color: var(--bg-btn-toggle);
-            color: var(--text-label);
-            border-color: var(--border-input);
-            cursor: not-allowed;
-            opacity: 0.6;
-            text-align: center;
-        }
+    #estado {
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: bold;
+      min-height: 20px;
+    }
 
-        /* Sección de Apartado */
-        .seccion-apartado {
-            background-color: var(--bg-apartado-box);
-            border: 1px dashed var(--border-apartado-box);
-            border-radius: 8px;
-            padding: 8px;
-            margin: 8px 0;
-            display: none;
-        }
-
-        .radio-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background-color: var(--bg-radio-container);
-            padding: 5px 10px;
-            border-radius: 6px;
-        }
-
-        .radio-group {
-            display: flex;
-            gap: 12px;
-        }
-
-        .radio-option {
-            display: flex;
-            align-items: center;
-            gap: 3px;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-main);
-            cursor: pointer;
-        }
-
-        /* Botón de Envío */
-        .btn-submit {
-            width: 100%;
-            padding: 10px;
-            background-color: #10b981;
-            border: none;
-            border-radius: 6px;
-            color: white;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 5px;
-            transition: background-color 0.2s ease;
-        }
-
-        .btn-submit.sending {
-            background-color: #f97316 !important;
-            cursor: not-allowed;
-        }
-
-        #mensaje {
-            margin-top: 8px;
-            padding: 6px;
-            border-radius: 6px;
-            text-align: center;
-            font-size: 12px;
-            display: none;
-            font-weight: 600;
-        }
-
-        .simulacion-exito {
-            background-color: #ecfdf5;
-            color: #065f46;
-            border: 1px solid #a7f3d0;
-        }
-
-        body.dark-mode .simulacion-exito {
-            background-color: #064e3b;
-            color: #a7f3d0;
-            border-color: #059669;
-        }
-
-        .simulacion-error {
-            background-color: #fef2f2;
-            color: #991b1b;
-            border: 1px solid #fca5a5;
-        }
-
-        body.dark-mode .simulacion-error {
-            background-color: #7f1d1d;
-            color: #fecaca;
-            border-color: #dc2626;
-        }
-
-        /* INTERFAZ CALCULADORA */
-        .calc-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: var(--bg-calc-overlay);
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            z-index: 1000;
-            visibility: hidden;
-            opacity: 0;
-            transition: opacity 0.2s ease, visibility 0.2s ease;
-        }
-
-        .calc-overlay.active {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        .calc-modal {
-            background-color: var(--bg-calc-modal);
-            padding: 16px;
-            border-radius: 16px 16px 0 0;
-            width: 100%;
-            max-width: 440px;
-            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
-        }
-
-        .calc-screen-container {
-            background-color: var(--bg-calc-screen);
-            border: 1px solid var(--border-calc-screen);
-            border-radius: 8px;
-            padding: 10px 14px;
-            margin-bottom: 12px;
-            min-height: 72px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: flex-end;
-        }
-
-        .calc-history {
-            color: var(--text-calc-history);
-            font-size: 13px;
-            font-family: Roboto, Arial, sans-serif;
-            min-height: 16px;
-            word-break: break-all;
-            text-align: right;
-        }
-
-        .calc-output {
-            color: var(--text-calc-output);
-            font-size: 28px;
-            font-weight: 400;
-            font-family: Roboto, Arial, sans-serif;
-            line-height: 1.2;
-        }
-
-        .calc-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-        }
-
-        .calc-btn {
-            border: 1px solid var(--border-calc-screen);
-            padding: 14px 0;
-            font-size: 18px;
-            font-weight: 500;
-            border-radius: 6px;
-            cursor: pointer;
-            text-align: center;
-            user-select: none;
-            outline: none;
-            font-family: Roboto, Arial, sans-serif;
-            transition: background-color 0.1s;
-        }
-
-        .calc-btn.num {
-            background-color: var(--bg-calc-num);
-            color: var(--text-calc-num);
-        }
-
-        .calc-btn.op {
-            background-color: var(--bg-calc-num);
-            color: #3b82f6;
-            font-size: 20px;
-        }
-
-        .calc-btn.clear {
-            background-color: var(--bg-calc-num);
-            color: #ef4444;
-            font-weight: 600;
-        }
-
-        .calc-btn.equals {
-            background-color: #3b82f6;
-            color: #ffffff;
-            border-color: #3b82f6;
-            font-weight: 700;
-        }
-
-        .calc-btn.empty {
-            visibility: hidden;
-            pointer-events: none;
-            border: none;
-        }
-
-        .calc-btn.done {
-            background-color: #10b981;
-            color: #ffffff;
-            border-color: #10b981;
-            grid-column: span 4;
-            font-size: 15px;
-            font-weight: 700;
-            text-transform: uppercase;
-            padding: 14px 0;
-            margin-top: 4px;
-        }
-    </style>
+    .cargando { color: #f2990a; }
+    .exito { color: #1e8e3e; }
+    .error { color: #d93025; }
+  </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header-row">
-        <h2>Registro de gastos 2026</h2>
-        <button type="button" class="theme-toggle-btn" id="btnThemeToggle" title="Cambiar Tema">🌙</button>
+  <div class="container">
+    <header>
+      <h1>Edes Fase - Nivel 1</h1>
+      <p style="font-size: 0.8rem; color: #5f6368;">Control de Asistencia</p>
+    </header>
+
+    <div class="mode-selector">
+      <button id="btnModoQR" class="mode-btn active" onclick="setModo('QR')">📷 Escáner QR</button>
+      <button id="btnModoManual" class="mode-btn" onclick="setModo('Manual')">⌨️ Entrada Manual</button>
     </div>
-    
-    <form id="formularioGastos">
-        
-        <div class="form-group">
-            <label for="gasto">Gasto ($ en pesos)</label>
-            <input type="text" id="gasto" placeholder="0.00 (Toca para calcular)" readonly required>
-        </div>
-        
-        <div class="form-row">
-            <div class="form-group">
-                <label for="periodo">Periodo</label>
-                <select id="periodo" required></select>
-            </div>
-            <div class="form-group">
-                <label for="fecha">Fecha</label>
-                <input type="date" id="fecha" required>
-            </div>
-        </div>
 
-        <div class="form-group">
-            <label>Categoría</label>
-            <div class="categorias-grid" id="contenedorCategorias">
-                <div class="btn-categoria" data-value="Pacto">Pacto</div>
-                <div class="btn-categoria" data-value="Casa">Casa</div>
-                <div class="btn-categoria" data-value="Rentas">Rentas</div>
-                <div class="btn-categoria" data-value="Personal">Personal</div>
-                <div class="btn-categoria" data-value="Hijos">Hijos</div>
-                <div class="btn-categoria" data-value="Familiares">Familiares</div>
-                <div class="btn-categoria" data-value="Cuentas">Cuentas</div>
-                <div class="btn-categoria" data-value="Autos">Autos</div>
-                <div class="btn-categoria" data-value="Mascotas">Mascotas</div>
-            </div>
-            <input type="hidden" id="categoriaSeleccionada" required>
+    <!-- Visor de Cámara -->
+    <div id="sectionQR" class="scanner-container">
+      <button id="btnEncenderCamara" class="btn-camara" onclick="iniciarCamara()">Iniciar Cámara</button>
+      <video id="video" playsinline></video>
+      <canvas id="canvas" hidden></canvas>
+    </div>
+
+    <!-- Entrada Manual (Backup) -->
+    <div id="sectionManual" class="manual-wrapper">
+      <label for="manualNoLista">Ingresar No. de Lista:</label>
+      <div class="manual-row">
+        <input type="text" id="manualNoLista" placeholder="Ej: 5" inputmode="numeric">
+        <button type="button" class="btn-buscar-manual" onclick="buscarManual()">Buscar</button>
+      </div>
+    </div>
+
+    <!-- Formulario -->
+    <form id="asistenciaForm" class="form-wrapper" onsubmit="event.preventDefault();">
+      <div class="campo">
+        <label for="noLista">No. Lista Seleccionado:</label>
+        <input type="text" id="noLista" readonly placeholder="---">
+      </div>
+
+      <div class="row-doble">
+        <div class="campo">
+          <label for="nombre">Nombre:</label>
+          <input type="text" id="nombre" readonly placeholder="---">
         </div>
-
-        <div class="form-group">
-            <label>Concepto</label>
-            <div class="conceptos-container" id="contenedorConceptos">
-                <div class="btn-concepto disabled">-- Elige primero una categoría --</div>
-            </div>
-            <input type="hidden" id="conceptoSeleccionado" required>
+        <div class="campo">
+          <label for="apellidos">Apellidos:</label>
+          <input type="text" id="apellidos" readonly placeholder="---">
         </div>
+      </div>
 
-        <div class="form-group">
-            <label>Cuenta</label>
-            <div class="btn-group-toggle-cuenta" id="grupoCuenta">
-                <div class="btn-toggle" data-value="NB">NB</div>
-                <div class="btn-toggle" data-value="EF">EF</div>
-                <div class="btn-toggle" data-value="VE">VE</div>
-                <div class="btn-toggle" data-value="ST">ST</div>
-                <div class="btn-toggle" data-value="NU">NU</div>
-                <div class="btn-toggle" data-value="MP">MP</div>
-                <div class="btn-toggle" data-value="DD">DD</div>
-            </div>
-            <input type="hidden" id="cuentaSeleccionada" required>
+      <div class="campo">
+        <label>¿Hizo la tarea?</label>
+        <div class="tarea-toggle">
+          <div id="optSi" class="tarea-option active-si" onclick="setTarea('Sí')">SÍ</div>
+          <div id="optNo" class="tarea-option" onclick="setTarea('No')">NO</div>
         </div>
+        <input type="hidden" id="hizoTarea" value="Sí">
+      </div>
 
-        <div class="form-group">
-            <label for="comentarios">Comentarios</label>
-            <textarea id="comentarios" placeholder="Notas opcionales..."></textarea>
-        </div>
+      <div id="estado"></div>
 
-        <div class="radio-container">
-            <label style="margin-bottom:0; font-size:12px;">¿Registrar apartado?</label>
-            <div class="radio-group">
-                <label class="radio-option">
-                    <input type="radio" name="registrarApartado" value="No" checked> No
-                </label>
-                <label class="radio-option">
-                    <input type="radio" name="registrarApartado" value="Sí"> Sí
-                </label>
-            </div>
-        </div>
-
-        <div class="seccion-apartado" id="seccionApartado">
-            <div class="form-group">
-                <label for="apartado">Apartado</label>
-                <select id="apartado">
-                    <option value="">-- Selecciona Apartado --</option>
-                    <option value="Agua">Agua</option>
-                    <option value="Ahorro">Ahorro</option>
-                    <option value="Ahorro Pablito">Ahorro Pablito</option>
-                    <option value="Ahorro Rikis">Ahorro Rikis</option>
-                    <option value="Alimento Nena">Alimento Nena</option>
-                    <option value="Apoyo hermanas">Apoyo hermanas</option>
-                    <option value="Bebbia">Bebbia</option>
-                    <option value="Beca Pablito">Beca Pablito</option>
-                    <option value="Cetina Rikis">Cetina Rikis</option>
-                    <option value="Cripto monedas">Cripto monedas</option>
-                    <option value="Diezmo Pablito">Diezmo Pablito</option>
-                    <option value="Diezmo Rikis">Diezmo Rikis</option>
-                    <option value="Escuela">Escuela</option>
-                    <option value="Gas">Gas</option>
-                    <option value="Mantenimiento">Mantenimiento</option>
-                    <option value="Pago LikeU">Pago LikeU</option>
-                    <option value="Pago MP">Pago MP</option>
-                    <option value="Personal y Hogar">Personal y Hogar</option>
-                    <option value="Prima Seguro">Prima Seguro</option>
-                    <option value="Ropa & accesorios niños">Ropa & accesorios niños</option>
-                    <option value="Ropa & accesorios papás">Ropa & accesorios papás</option>
-                    <option value="Servicios/Refacciones">Servicios/Refacciones</option>
-                    <option value="Viajes">Viajes</option>
-                </select>
-            </div>
-
-            <div class="form-group" style="margin-bottom: 0;">
-                <label>Cuenta de ahorro</label>
-                <div class="btn-group-toggle-ahorro" id="grupoCuentaAhorro">
-                    <div class="btn-toggle" data-value="BC">BC</div>
-                    <div class="btn-toggle" data-value="CT">CT</div>
-                    <div class="btn-toggle" data-value="DD">DD</div>
-                    <div class="btn-toggle" data-value="EF">EF</div>
-                    <div class="btn-toggle" data-value="ET">ET</div>
-                    <div class="btn-toggle" data-value="MD">MD</div>
-                    <div class="btn-toggle" data-value="MP">MP</div>
-                    <div class="btn-toggle" data-value="NB">NB</div>
-                    <div class="btn-toggle" data-value="NU">NU</div>
-                    <div class="btn-toggle" data-value="ST">ST</div>
-                    <div class="btn-toggle" data-value="OP">OP</div>
-                    <div class="btn-toggle" data-value="RV">RV</div>
-                </div>
-                <input type="hidden" id="cuentaAhorroSeleccionada">
-            </div>
-        </div>
-
-        <button type="submit" class="btn-submit" id="btnRegistrar">Registrar Gasto</button>
+      <button type="button" id="btnGuardar" class="btn-guardar" onclick="enviarAsistencia()" disabled>
+        REGISTRAR ASISTENCIA
+      </button>
     </form>
+  </div>
 
-    <div id="mensaje"></div>
-</div>
+  <script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzm5dVqEwCQsrORdD0_tIONb7jlwSxE5ocyQTwC9vXL28I18E43m2fEdALNPJ5dmmjl/exec";
 
-<div class="calc-overlay" id="calcOverlay">
-    <div class="calc-modal">
-        <div class="calc-screen-container">
-            <div class="calc-history" id="calcHistory"></div>
-            <div class="calc-output" id="calcOutput">0</div>
-        </div>
+    let videoStream = null;
+    let scanning = false;
+    let buscando = false;
+
+    function setModo(modo) {
+      const btnQR = document.getElementById('btnModoQR');
+      const btnManual = document.getElementById('btnModoManual');
+      const secQR = document.getElementById('sectionQR');
+      const secManual = document.getElementById('sectionManual');
+
+      if (modo === 'QR') {
+        btnQR.className = "mode-btn active";
+        btnManual.className = "mode-btn";
+        secQR.style.display = "flex";
+        secManual.style.display = "none";
+      } else {
+        btnQR.className = "mode-btn";
+        btnManual.className = "mode-btn active";
+        secQR.style.display = "none";
+        secManual.style.display = "flex";
+        detenerCamara();
+      }
+      limpiarFormulario();
+    }
+
+    function iniciarCamara() {
+      const video = document.getElementById('video');
+      document.getElementById('btnEncenderCamara').style.display = 'none';
+      mostrarEstado("Abriendo cámara...", "cargando");
+
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+        .then(function(stream) {
+          videoStream = stream;
+          video.srcObject = stream;
+          video.setAttribute("playsinline", true);
+          video.play();
+          scanning = true;
+          mostrarEstado("Apunta la cámara al código QR", "exito");
+          requestAnimationFrame(tick);
+        })
+        .catch(function(err) {
+          mostrarEstado("Error de cámara: Asegúrate de dar permisos.", "error");
+          document.getElementById('btnEncenderCamara').style.display = 'block';
+        });
+    }
+
+    function detenerCamara() {
+      scanning = false;
+      if (videoStream) {
+        videoStream.getTracks().forEach(track => track.stop());
+        videoStream = null;
+      }
+      document.getElementById('btnEncenderCamara').style.display = 'block';
+    }
+
+    function tick() {
+      if (!scanning) return;
+
+      const video = document.getElementById('video');
+      const canvas = document.getElementById('canvas');
+      const context = canvas.getContext('2d');
+
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvas.height = video.videoHeight;
+        canvas.width = video.videoWidth;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
         
-        <div class="calc-grid">
-            <div class="calc-btn clear" onclick="pressAC()">AC</div>
-            <div class="calc-btn clear" onclick="pressBackspace()">⌫</div>
-            <div class="calc-btn op" onclick="pressPercent()">%</div>
-            <div class="calc-btn op" onclick="pressOp('/')">÷</div>
-            
-            <div class="calc-btn num" onclick="pressNum('7')">7</div>
-            <div class="calc-btn num" onclick="pressNum('8')">8</div>
-            <div class="calc-btn num" onclick="pressNum('9')">9</div>
-            <div class="calc-btn op" onclick="pressOp('*')">×</div>
-            
-            <div class="calc-btn num" onclick="pressNum('4')">4</div>
-            <div class="calc-btn num" onclick="pressNum('5')">5</div>
-            <div class="calc-btn num" onclick="pressNum('6')">6</div>
-            <div class="calc-btn op" onclick="pressOp('-')">−</div>
-            
-            <div class="calc-btn num" onclick="pressNum('1')">1</div>
-            <div class="calc-btn num" onclick="pressNum('2')">2</div>
-            <div class="calc-btn num" onclick="pressNum('3')">3</div>
-            <div class="calc-btn op" onclick="pressOp('+')">+</div>
-            
-            <div class="calc-btn empty"></div>
-            <div class="calc-btn num" onclick="pressNum('0')">0</div>
-            <div class="calc-btn num" onclick="pressNum('.')">.</div>
-            <div class="calc-btn equals" onclick="pressEquals()">=</div>
-            
-            <div class="calc-btn done" onclick="closeCalc()">Aceptar</div>
-        </div>
-    </div>
-</div>
-
-<script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzRvv34XfLyIfxy4tnE-zCZqxpLPlWAx_-VxO2D__KWCAlrMBgECetdfwqXGRv-JPxHtQ/exec";
-
-    // Lógica de Modo Oscuro con detección automática y persistencia
-    const btnThemeToggle = document.getElementById('btnThemeToggle');
-    const temaGuardado = localStorage.getItem('theme');
-    const prefiereOscuro = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-    if (temaGuardado === 'dark' || (!temaGuardado && prefiereOscuro)) {
-        document.body.classList.add('dark-mode');
-        btnThemeToggle.innerText = '☀️';
-    } else {
-        btnThemeToggle.innerText = '🌙';
-    }
-
-    btnThemeToggle.addEventListener('click', () => {
-        document.body.classList.toggle('dark-mode');
-        const esOscuro = document.body.classList.contains('dark-mode');
-        btnThemeToggle.innerText = esOscuro ? '☀️️' : '🌙';
-        localStorage.setItem('theme', esOscuro ? 'dark' : 'light');
-    });
-
-    const rangosPeriodos = [
-        { id: 1, inicio: '2026-01-09', fin: '2026-01-22' },
-        { id: 2, inicio: '2026-01-23', fin: '2026-02-05' },
-        { id: 3, inicio: '2026-02-06', fin: '2026-02-19' },
-        { id: 4, inicio: '2026-02-20', fin: '2026-03-05' },
-        { id: 5, inicio: '2026-03-06', fin: '2026-03-19' },
-        { id: 6, inicio: '2026-03-20', fin: '2026-04-02' },
-        { id: 7, inicio: '2026-04-03', fin: '2026-04-16' },
-        { id: 8, inicio: '2026-04-17', fin: '2026-04-30' },
-        { id: 9, inicio: '2026-04-30', fin: '2026-05-13' },
-        { id: 10, inicio: '2026-05-14', fin: '2026-05-27' },
-        { id: 11, inicio: '2026-05-28', fin: '2026-06-10' },
-        { id: 12, inicio: '2026-06-11', fin: '2026-06-24' },
-        { id: 13, inicio: '2026-06-25', fin: '2026-07-08' },
-        { id: 14, inicio: '2026-07-09', fin: '2026-07-22' },
-        { id: 15, inicio: '2026-07-23', fin: '2026-08-05' },
-        { id: 16, inicio: '2026-08-06', fin: '2026-08-19' },
-        { id: 17, inicio: '2026-08-20', fin: '2026-09-02' },
-        { id: 18, inicio: '2026-09-03', fin: '2026-09-16' },
-        { id: 19, inicio: '2026-09-17', fin: '2026-09-30' },
-        { id: 20, inicio: '2026-10-01', fin: '2026-10-14' },
-        { id: 21, inicio: '2026-10-15', fin: '2026-10-28' },
-        { id: 22, inicio: '2026-10-29', fin: '2026-11-11' },
-        { id: 23, inicio: '2026-11-12', fin: '2026-11-25' },
-        { id: 24, inicio: '2026-11-26', fin: '2026-12-09' },
-        { id: 25, inicio: '2026-12-10', fin: '2026-12-23' },
-        { id: 26, inicio: '2026-12-24', fin: '2027-01-06' }
-    ];
-
-    function obtenerPeriodoPorFecha(fechaObj) {
-        const target = new Date(fechaObj.getFullYear(), fechaObj.getMonth(), fechaObj.getDate()).getTime();
-        for (let p of rangosPeriodos) {
-            if(!p.inicio) continue;
-            let [pAnoI, pMesI, pDiaI] = p.inicio.split('-').map(Number);
-            let [pAnoF, pMesF, pDiaF] = p.fin.split('-').map(Number);
-            let dateInicio = new Date(pAnoI, pMesI - 1, pDiaI).getTime();
-            let dateFin = new Date(pAnoF, pMesF - 1, pDiaF).getTime();
-            if (target >= dateInicio && target <= dateFin) return p.id.toString();
-        }
-        return "1";
-    }
-
-    const estructuraGastos = {
-        "Pacto": {
-            default: "Diezmo Salario",
-            options: ["Diezmo Salario", "Diezmo Despensa", "Ofrenda Ive S1", "Ofrenda Ive S2", "Ofrenda Rico S1", "Ofrenda Rico S2", "Ofrenda Hijos S1", "Ofrenda Hijos S2", "Desayuno S1", "Desayuno S2", "Diezmo extra", "Ofrenda extra", "Cooperación", "Apoyo hermanas", "Talento", "Viajes", "Ofrenda Terreno", "Otros"]
-        },
-        "Casa": {
-            default: "Personal y Hogar",
-            options: ["Gasto Sem 1", "Gasto Sem 2", "Personal y Hogar", "Luz", "Agua", "Mantenimiento", "Gas", "Predial & Limpia", "Arreglos", "Muebles/Accesorios", "Bebbia", "Propiedades", "Otros"]
-        },
-        "Rentas": {
-            default: "Teléfono",
-            options: ["Teléfono", "Plan familiar Google", "Streaming", "Almacenamiento", "Otros"]
-        },
-        "Personal": {
-            default: "Semana Ive S1",
-            options: ["Semana Ive S1", "Semana Ive S2", "Semana Rico S1", "Semana Rico S2", "Cel Ive", "Cel Rico", "Médico y/o Medicina", "Diversión", "Ropa & Accesorios", "Comida", "Cursos", "Transporte", "Viajes", "Otros"]
-        },
-        "Hijos": {
-            default: "Semana Hijos S1",
-            options: ["Semana Hijos S1", "Semana Hijos S2", "Beca Rikis", "Beca Pablito", "Escuela", "Cursos", "Médico y/o Medicina", "Ropa & Accesorios", "Diezmo Rikis", "Diezmo Pablito", "Juguetes/Regalos", "Cumpleaños", "Otros"]
-        },
-        "Familiares": {
-            default: "Papás Ive",
-            options: ["Papás Ive", "Papás Rico", "Hermanos", "Sobrinos", "Otros"]
-        },
-        "Cuentas": {
-            default: "Ahorro",
-            options: ["Ahorro", "Ajuste de cuentas", "Prestamos", "TDC MP", "TDC LikeU", "Otros"]
-        },
-        "Autos": {
-            default: "Gasolina Auto",
-            options: ["Gasolina Auto", "Control Vehicular", "Lavado", "Pago Auto", "Prima Seguro", "Refacciones/Accesorios", "Servicio", "Verificacion", "Otros"]
-        },
-        "Mascotas": {
-            default: "Alimento",
-            options: ["Accesorios", "Alimento", "Veterinario/Medicinas", "Otros"]
-        }
-    };
-
-    const periodoSelect = document.getElementById('periodo');
-    const contenedorCategorias = document.getElementById('contenedorCategorias');
-    const categoriaHidden = document.getElementById('categoriaSeleccionada');
-    const contenedorConceptos = document.getElementById('contenedorConceptos');
-    const conceptoHidden = document.getElementById('conceptoSeleccionado');
-    const fechaInput = document.getElementById('fecha');
-    const formulario = document.getElementById('formularioGastos');
-    const mensajeDiv = document.getElementById('mensaje');
-    const radioApartado = document.getElementsByName('registrarApartado');
-    const seccionApartado = document.getElementById('seccionApartado');
-    const apartadoSelect = document.getElementById('apartado');
-    const cuentaAhorroHidden = document.getElementById('cuentaAhorroSeleccionada');
-    const gastoInput = document.getElementById('gasto');
-    const btnRegistrar = document.getElementById('btnRegistrar');
-
-    function establecerFechaLocal(inputElem) {
-        const hoy = new Date();
-        const ano = hoy.getFullYear();
-        const mes = String(hoy.getMonth() + 1).padStart(2, '0');
-        const dia = String(hoy.getDate()).padStart(2, '0');
-        inputElem.value = `${ano}-${mes}-${dia}`;
-        return hoy;
-    }
-
-    const fechaActual = establecerFechaLocal(fechaInput);
-    const periodoInicialDefault = obtenerPeriodoPorFecha(fechaActual);
-
-    for (let i = 1; i <= 26; i++) {
-        const opt = document.createElement('option');
-        opt.value = i;
-        opt.innerText = i;
-        if (i === parseInt(periodoInicialDefault)) opt.selected = true;
-        periodoSelect.appendChild(opt);
-    }
-
-    fechaInput.addEventListener('change', function() {
-        if (this.value) {
-            const partes = this.value.split('-');
-            const fechaElegida = new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
-            periodoSelect.value = obtenerPeriodoPorFecha(fechaElegida);
-        }
-    });
-
-    function actualizarConceptos(cat) {
-        contenedorConceptos.innerHTML = '';
-        conceptoHidden.value = '';
-
-        if (cat && estructuraGastos[cat]) {
-            const infoCat = estructuraGastos[cat];
-            infoCat.options.forEach(function(concepto) {
-                const btn = document.createElement('div');
-                btn.className = 'btn-concepto';
-                btn.innerText = concepto;
-                
-                if (concepto === infoCat.default) {
-                    btn.classList.add('active');
-                    conceptoHidden.value = concepto;
-                }
-
-                btn.addEventListener('click', function() {
-                    const hermanos = contenedorConceptos.querySelectorAll('.btn-concepto');
-                    hermanos.forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    conceptoHidden.value = concepto;
-                });
-
-                contenedorConceptos.appendChild(btn);
-            });
-        } else {
-            contenedorConceptos.innerHTML = '<div class="btn-concepto disabled">-- Elige primero una categoría --</div>';
-        }
-    }
-
-    const botonesCategoria = contenedorCategorias.querySelectorAll('.btn-categoria');
-    botonesCategoria.forEach(btn => {
-        btn.addEventListener('click', function() {
-            botonesCategoria.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            const valorCat = this.getAttribute('data-value');
-            categoriaHidden.value = valorCat;
-            actualizarConceptos(valorCat);
+        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height, {
+          inversionAttempts: "dontInvert",
         });
-    });
 
-    function configurarBotonesToggle(idContenedor, idHidden) {
-        const contenedor = document.getElementById(idContenedor);
-        const hiddenInput = document.getElementById(idHidden);
-        const botones = contenedor.querySelectorAll('.btn-toggle');
-        botones.forEach(btn => {
-            btn.addEventListener('click', function() {
-                const hermanos = contenedor.querySelectorAll('.btn-toggle');
-                hermanos.forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                hiddenInput.value = this.getAttribute('data-value');
-            });
+        if (code && code.data && !buscando) {
+          buscando = true;
+          document.getElementById('noLista').value = code.data;
+          solicitarDatosAlumno(code.data);
+        }
+      }
+      
+      if (scanning) {
+        requestAnimationFrame(tick);
+      }
+    }
+
+    function buscarManual() {
+      const valor = document.getElementById('manualNoLista').value.trim();
+      if (!valor) {
+        mostrarEstado("Ingresa un número de lista.", "error");
+        return;
+      }
+      buscando = true;
+      document.getElementById('noLista').value = valor;
+      solicitarDatosAlumno(valor);
+    }
+
+    // Búsqueda asegurando respuesta en JSON
+    function solicitarDatosAlumno(noLista) {
+      mostrarEstado("Buscando en la base de datos...", "cargando");
+
+      const url = `${WEB_APP_URL}?noLista=${encodeURIComponent(noLista)}`;
+
+      fetch(url, { method: "GET", redirect: "follow" })
+        .then(response => response.json())
+        .then(res => {
+          const btn = document.getElementById('btnGuardar');
+          if (res && res.encontrado) {
+            document.getElementById('nombre').value = res.nombre;
+            document.getElementById('apellidos').value = res.apellidos;
+            mostrarEstado(`Encontrado: ${res.nombre} ${res.apellidos}`, "exito");
+            btn.disabled = false;
+          } else {
+            document.getElementById('nombre').value = "";
+            document.getElementById('apellidos').value = "";
+            mostrarEstado(res.mensaje || "Alumno no encontrado.", "error");
+            btn.disabled = true;
+            setTimeout(() => { buscando = false; }, 2000);
+          }
+        })
+        .catch(err => {
+          mostrarEstado("Error al consultar la hoja de cálculo.", "error");
+          buscando = false;
         });
     }
-    configurarBotonesToggle('grupoCuenta', 'cuentaSeleccionada');
-    configurarBotonesToggle('grupoCuentaAhorro', 'cuentaAhorroSeleccionada');
 
-    radioApartado.forEach(radio => {
-        radio.addEventListener('change', function() {
-            if (this.value === 'Sí') {
-                seccionApartado.style.display = 'block';
-                apartadoSelect.required = true;
-                cuentaAhorroHidden.required = true;
-            } else {
-                seccionApartado.style.display = 'none';
-                apartadoSelect.required = false;
-                cuentaAhorroHidden.required = false;
-                apartadoSelect.value = '';
-                cuentaAhorroHidden.value = '';
-                document.getElementById('grupoCuentaAhorro').querySelectorAll('.btn-toggle').forEach(b => b.classList.remove('active'));
-            }
-        });
-    });
-
-    // CALCULADORA INTEGRADA
-    const calcOverlay = document.getElementById('calcOverlay');
-    const calcHistory = document.getElementById('calcHistory');
-    const calcOutput = document.getElementById('calcOutput');
-    let currentInput = "0"; 
-    let expression = "";    
-    let isEvaluated = false;
-
-    gastoInput.addEventListener('click', function() {
-        let valActual = gastoInput.value || "0";
-        currentInput = valActual === "0" ? "0" : valActual;
-        expression = valActual === "0" ? "" : valActual;
-        calcHistory.innerText = "";
-        calcOutput.innerText = currentInput;
-        calcOverlay.classList.add('active');
-    });
-
-    window.pressNum = function(num) {
-        if (isEvaluated) {
-            currentInput = "";
-            expression = "";
-            isEvaluated = false;
-        }
-        if (currentInput === "0" && num !== ".") {
-            currentInput = num;
-        } else {
-            if (num === "." && currentInput.includes(".")) return;
-            currentInput += num;
-        }
-        expression += num;
-        calcOutput.innerText = currentInput;
-    };
-
-    window.pressOp = function(op) {
-        isEvaluated = false;
-        if (expression === "") expression = currentInput === "0" ? "0" : currentInput;
-        const lastChar = expression.trim().slice(-1);
-        if (["+", "-", "*", "/"].includes(lastChar)) expression = expression.trim().slice(0, -1);
-        expression = expression.trim() + " " + op + " ";
-        calcHistory.innerText = expression.replace(/\*/g, "×").replace(/\//g, "÷");
-        currentInput = "0";
-    };
-
-    window.pressAC = function() {
-        currentInput = "0";
-        expression = "";
-        calcHistory.innerText = "";
-        calcOutput.innerText = "0";
-        isEvaluated = false;
-    };
-
-    window.pressBackspace = function() {
-        if (isEvaluated) {
-            calcHistory.innerText = "";
-            isEvaluated = false;
-            return;
-        }
-        if (currentInput.length > 1) {
-            currentInput = currentInput.slice(0, -1);
-            expression = expression.trim().slice(0, -1);
-        } else {
-            currentInput = "0";
-            if(expression.length > 0) expression = expression.trim().slice(0, -1);
-        }
-        calcOutput.innerText = currentInput;
-    };
-
-    window.pressPercent = function() {
-        if (currentInput === "0" || expression === "") return;
-        let tokens = expression.trim().split(" ");
-        if (tokens.length >= 3) {
-            let baseValue = parseFloat(tokens[tokens.length - 3]);
-            let operator = tokens[tokens.length - 2];
-            let percentModifier = parseFloat(currentInput);
-            if (!isNaN(baseValue) && ["+", "-"].includes(operator)) {
-                let realPercentValue = baseValue * (percentModifier / 100);
-                let lengthToRemove = currentInput.length;
-                expression = expression.slice(0, expression.length - lengthToRemove) + realPercentValue.toString();
-                calcHistory.innerText = tokens.slice(0, -1).join(" ").replace(/\*/g, "×").replace(/\//g, "÷") + " " + percentModifier + "%";
-                currentInput = realPercentValue.toString();
-                calcOutput.innerText = percentModifier + "%";
-                return;
-            }
-        }
-        try {
-            let val = parseFloat(currentInput) / 100;
-            let lengthToRemove = currentInput.length;
-            expression = expression.slice(0, expression.length - lengthToRemove) + val.toString();
-            currentInput = val.toString();
-            calcOutput.innerText = currentInput;
-        } catch (e) {
-            calcOutput.innerText = "Error";
-        }
-    };
-
-    window.pressEquals = function() {
-        if (expression === "") return;
-        if (!calcHistory.innerText.includes("%")) {
-            calcHistory.innerText = expression.replace(/\*/g, "×").replace(/\//g, "÷") + " =";
-        } else {
-            calcHistory.innerText += " =";
-        }
-        try {
-            let result = eval(expression);
-            if (result !== undefined) {
-                result = Math.round(result * 100) / 100;
-                currentInput = result.toString();
-                expression = currentInput; 
-                calcOutput.innerText = currentInput;
-                isEvaluated = true;
-            }
-        } catch (e) {
-            calcOutput.innerText = "Error";
-            currentInput = "0";
-            expression = "";
-        }
-    };
-
-    window.closeCalc = function() {
-        if (!isEvaluated && expression !== "") pressEquals();
-        gastoInput.value = currentInput || "0";
-        calcOverlay.classList.remove('active');
-    };
-
-    calcOverlay.addEventListener('click', function(e) {
-        if (e.target === calcOverlay) closeCalc();
-    });
-
-    async function enviarConReintentos(url, datos, reintentosMaximos = 3) {
-        for (let i = 0; i < reintentosMaximos; i++) {
-            try {
-                await fetch(url, {
-                    method: 'POST',
-                    mode: 'no-cors', 
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(datos)
-                });
-                return true; 
-            } catch (error) {
-                console.warn(`Intento ${i + 1} fallido. Reintentando...`, error);
-                if (i === reintentosMaximos - 1) throw error; 
-            }
-        }
+    function setTarea(valor) {
+      document.getElementById('hizoTarea').value = valor;
+      document.getElementById('optSi').className = valor === 'Sí' ? "tarea-option active-si" : "tarea-option";
+      document.getElementById('optNo').className = valor === 'No' ? "tarea-option active-no" : "tarea-option";
     }
 
-    formulario.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const categoriaFinal = categoriaHidden.value;
-        if (!categoriaFinal) { alert('Por favor, selecciona una Categoría.'); return; }
-        const conceptoFinal = conceptoHidden.value;
-        if (!conceptoFinal) { alert('Por favor, selecciona un Concepto.'); return; }
-        const cuentaPrincipal = document.getElementById('cuentaSeleccionada').value;
-        if (!cuentaPrincipal) { alert('Por favor, selecciona una Cuenta.'); return; }
-        const mnt = parseFloat(gastoInput.value);
-        if (isNaN(mnt) || mnt <= 0) { alert('Por favor, ingresa un monto de Gasto válido.'); return; }
+    function enviarAsistencia() {
+      const btn = document.getElementById('btnGuardar');
+      btn.disabled = true;
 
-        const registrarAp = document.querySelector('input[name="registrarApartado"]:checked').value;
-        const datos = {
-            gasto: mnt,
-            periodo: periodoSelect.value,
-            fecha: fechaInput.value,
-            categoria: categoriaFinal,
-            concepto: conceptoFinal,
-            cuenta: cuentaPrincipal,
-            comentarios: document.getElementById('comentarios').value,
-            registrar_apartado: registrarAp,
-            apartado: registrarAp === 'Sí' ? apartadoSelect.value : 'N/A',
-            cuenta_ahorro: registrarAp === 'Sí' ? cuentaAhorroHidden.value : 'N/A'
-        };
+      const datos = {
+        noLista: document.getElementById('noLista').value,
+        nombre: document.getElementById('nombre').value,
+        apellidos: document.getElementById('apellidos').value,
+        hizoTarea: document.getElementById('hizoTarea').value
+      };
 
-        btnRegistrar.classList.add('sending');
-        btnRegistrar.innerText = "Enviando";
-        btnRegistrar.disabled = true;
-        mensajeDiv.style.display = "none";
+      mostrarEstado("Guardando registro...", "cargando");
 
-        try {
-            await enviarConReintentos(WEB_APP_URL, datos, 3);
-            
-            btnRegistrar.classList.remove('sending');
-            btnRegistrar.innerText = "Registrar gasto";
-            btnRegistrar.disabled = false;
+      fetch(WEB_APP_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(datos)
+      })
+      .then(() => {
+        mostrarEstado("¡Asistencia registrada con éxito!", "exito");
+        setTimeout(() => {
+          limpiarFormulario();
+        }, 1500);
+      })
+      .catch(err => {
+        mostrarEstado("Error al guardar.", "error");
+        btn.disabled = false;
+      });
+    }
 
-            mensajeDiv.className = "simulacion-exito";
-            mensajeDiv.innerHTML = `<strong>¡Guardado con éxito!</strong> Información enviada a la pestaña Gastos.`;
-            mensajeDiv.style.display = "block";
+    function mostrarEstado(msg, tipo) {
+      const div = document.getElementById('estado');
+      div.innerText = msg;
+      div.className = tipo;
+    }
 
-            formulario.reset();
-            
-            const resetHoy = establecerFechaLocal(fechaInput);
-            periodoSelect.value = obtenerPeriodoPorFecha(resetHoy);
-            
-            botonesCategoria.forEach(b => b.classList.remove('active'));
-            categoriaHidden.value = '';
-            contenedorConceptos.innerHTML = '<div class="btn-concepto disabled">-- Elige primero una categoría --</div>';
-            conceptoHidden.value = '';
-            document.getElementById('cuentaSeleccionada').value = '';
-            cuentaAhorroHidden.value = '';
-            document.querySelectorAll('.btn-toggle').forEach(b => b.classList.remove('active'));
-            seccionApartado.style.display = 'none';
-
-            setTimeout(() => { mensajeDiv.style.display = "none"; }, 4000);
-
-        } catch (err) {
-            console.error("Error definitivo tras 3 intentos:", err);
-            btnRegistrar.classList.remove('sending');
-            btnRegistrar.innerText = "Registrar gasto";
-            btnRegistrar.disabled = false;
-
-            mensajeDiv.className = "simulacion-error";
-            mensajeDiv.innerText = "No se pudo guardar la información, intenta nuevamente";
-            mensajeDiv.style.display = "block";
-
-            setTimeout(() => { mensajeDiv.style.display = "none"; }, 3000);
-        }
-    });
-</script>
-
+    function limpiarFormulario() {
+      document.getElementById('noLista').value = "";
+      document.getElementById('nombre').value = "";
+      document.getElementById('apellidos').value = "";
+      document.getElementById('manualNoLista').value = "";
+      setTarea('Sí');
+      document.getElementById('btnGuardar').disabled = true;
+      buscando = false;
+      mostrarEstado("", "");
+    }
+  </script>
 </body>
 </html>
