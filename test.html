@@ -4,14 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Asistencia - Edes Fase - Nivel 1</title>
-  <!-- Librería para el escáner QR continuo en vivo -->
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     
     body {
@@ -32,7 +31,7 @@
 
     header {
       text-align: center;
-      padding: 8px 0;
+      padding: 4px 0;
     }
 
     h1 {
@@ -41,7 +40,6 @@
       font-weight: 700;
     }
 
-    /* Selector de modo: QR vs Manual */
     .mode-selector {
       display: flex;
       background-color: #e8eaed;
@@ -68,48 +66,25 @@
       box-shadow: 0 1px 3px rgba(0,0,0,0.12);
     }
 
-    /* Visor de Cámara QR */
     .scanner-wrapper {
-      position: relative;
       width: 100%;
-      height: 260px;
-      background-color: #000;
+      background-color: #ffffff;
       border-radius: 12px;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      padding: 8px;
+      border: 1px solid #dadce0;
     }
 
     #reader {
       width: 100%;
-      height: 100%;
     }
 
-    #reader video {
-      object-fit: cover !important;
-      width: 100% !important;
-      height: 100% !important;
-    }
-
-    .btn-camara-start {
-      background-color: #1a73e8;
-      color: white;
-      border: none;
-      padding: 12px 20px;
-      font-size: 0.95rem;
-      font-weight: bold;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    /* Área de entrada manual */
     .manual-wrapper {
       display: none;
       background-color: #ffffff;
       padding: 16px;
       border-radius: 12px;
       border: 1px solid #dadce0;
+      flex-direction: column;
       gap: 8px;
     }
 
@@ -132,7 +107,6 @@
       cursor: pointer;
     }
 
-    /* Formulario */
     .form-wrapper {
       background: #ffffff;
       padding: 16px;
@@ -154,7 +128,6 @@
       font-weight: 700;
       color: #5f6368;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
     }
 
     input[type="text"] {
@@ -181,7 +154,6 @@
       flex: 1;
     }
 
-    /* Selector de Tarea */
     .tarea-toggle {
       display: flex;
       background-color: #f1f3f4;
@@ -245,31 +217,29 @@
   <div class="container">
     <header>
       <h1>Edes Fase - Nivel 1</h1>
-      <p style="font-size: 0.8rem; color: #5f6368; margin-top: 2px;">Control de Asistencia</p>
+      <p style="font-size: 0.8rem; color: #5f6368;">Control de Asistencia</p>
     </header>
 
-    <!-- Pestañas de modo de lectura -->
     <div class="mode-selector">
       <button id="btnModoQR" class="mode-btn active" onclick="setModo('QR')">📷 Escáner QR</button>
       <button id="btnModoManual" class="mode-btn" onclick="setModo('Manual')">⌨️ Entrada Manual</button>
     </div>
 
-    <!-- Sección QR -->
+    <!-- Escáner QR -->
     <div id="sectionQR" class="scanner-wrapper">
-      <button id="btnIniciarCamara" class="btn-camara-start" onclick="iniciarCamara()">Encender Cámara</button>
-      <div id="reader" style="display: none;"></div>
+      <div id="reader"></div>
     </div>
 
-    <!-- Sección Manual (Backup) -->
+    <!-- Entrada Manual (Backup) -->
     <div id="sectionManual" class="manual-wrapper">
       <label for="manualNoLista">Ingresar No. de Lista:</label>
       <div class="manual-row">
         <input type="text" id="manualNoLista" placeholder="Ej: 5" inputmode="numeric">
-        <button class="btn-buscar-manual" onclick="buscarManual()">Buscar</button>
+        <button type="button" class="btn-buscar-manual" onclick="buscarManual()">Buscar</button>
       </div>
     </div>
 
-    <!-- Formulario de Datos y Asistencia -->
+    <!-- Formulario -->
     <form id="asistenciaForm" class="form-wrapper" onsubmit="event.preventDefault();">
       <div class="campo">
         <label for="noLista">No. Lista Seleccionado:</label>
@@ -305,13 +275,23 @@
   </div>
 
   <script>
-    // PEGA AQUÍ LA URL DE TU DESPLIEGUE DE GOOGLE APPS SCRIPT
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzm5dVqEwCQsrORdD0_tIONb7jlwSxE5ocyQTwC9vXL28I18E43m2fEdALNPJ5dmmjl/exec";
 
-    let html5QrCode = null;
+    let html5QrcodeScanner = null;
     let buscando = false;
 
-    // Cambiar entre modo Escáner QR y Entrada Manual
+    // Inicializar lector QR
+    function initScanner() {
+      if (!html5QrcodeScanner) {
+        html5QrcodeScanner = new Html5QrcodeScanner(
+          "reader",
+          { fps: 10, qrbox: { width: 200, height: 200 } },
+          /* verbose= */ false
+        );
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+      }
+    }
+
     function setModo(modo) {
       const btnQR = document.getElementById('btnModoQR');
       const btnManual = document.getElementById('btnModoManual');
@@ -321,57 +301,28 @@
       if (modo === 'QR') {
         btnQR.className = "mode-btn active";
         btnManual.className = "mode-btn";
-        secQR.style.display = "flex";
+        secQR.style.display = "block";
         secManual.style.display = "none";
       } else {
         btnQR.className = "mode-btn";
         btnManual.className = "mode-btn active";
         secQR.style.display = "none";
         secManual.style.display = "flex";
-        detenerCamara();
       }
       limpiarFormulario();
     }
 
-    // Activar escáner de cámara continuo
-    function iniciarCamara() {
-      document.getElementById('btnIniciarCamara').style.display = 'none';
-      document.getElementById('reader').style.display = 'block';
-      mostrarEstado("Iniciando cámara...", "cargando");
-
-      html5QrCode = new Html5Qrcode("reader");
-      html5QrCode.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 220, height: 220 } },
-        onScanSuccess
-      ).then(() => {
-        mostrarEstado("Cámara activa. Listo para escanear.", "exito");
-      }).catch(err => {
-        mostrarEstado("Error al abrir cámara: " + err, "error");
-        document.getElementById('btnIniciarCamara').style.display = 'block';
-        document.getElementById('reader').style.display = 'none';
-      });
-    }
-
-    function detenerCamara() {
-      if (html5QrCode && html5QrCode.isScanning) {
-        html5QrCode.stop().then(() => {
-          document.getElementById('btnIniciarCamara').style.display = 'block';
-          document.getElementById('reader').style.display = 'none';
-        }).catch(() => {});
-      }
-    }
-
-    // Evento al detectar un QR exitosamente
     function onScanSuccess(decodedText) {
       if (buscando) return;
       buscando = true;
-
       document.getElementById('noLista').value = decodedText;
       solicitarDatosAlumno(decodedText);
     }
 
-    // Búsqueda en modo manual (Backup)
+    function onScanFailure(error) {
+      // Ignorar errores de escaneo continuo
+    }
+
     function buscarManual() {
       const valor = document.getElementById('manualNoLista').value.trim();
       if (!valor) {
@@ -383,11 +334,13 @@
       solicitarDatosAlumno(valor);
     }
 
-    // Petición GET al Web App de Google Apps Script
+    // Solución al problema de CORS/Redirección en Apps Script
     function solicitarDatosAlumno(noLista) {
       mostrarEstado("Buscando alumno...", "cargando");
 
-      fetch(`${WEB_APP_URL}?noLista=${encodeURIComponent(noLista)}`)
+      const url = `${WEB_APP_URL}?noLista=${encodeURIComponent(noLista)}`;
+
+      fetch(url, { redirect: "follow" })
         .then(response => response.json())
         .then(res => {
           const btn = document.getElementById('btnGuardar');
@@ -401,23 +354,21 @@
             document.getElementById('apellidos').value = "";
             mostrarEstado(res.mensaje || "Alumno no encontrado.", "error");
             btn.disabled = true;
-            setTimeout(() => { buscando = false; }, 2000);
           }
+          buscando = false;
         })
         .catch(err => {
-          mostrarEstado("Error de conexión con el servidor.", "error");
+          mostrarEstado("Error al conectar con la base de datos.", "error");
           buscando = false;
         });
     }
 
-    // Cambiar estado de la Tarea
     function setTarea(valor) {
       document.getElementById('hizoTarea').value = valor;
       document.getElementById('optSi').className = valor === 'Sí' ? "tarea-option active-si" : "tarea-option";
       document.getElementById('optNo').className = valor === 'No' ? "tarea-option active-no" : "tarea-option";
     }
 
-    // Petición POST para guardar la asistencia
     function enviarAsistencia() {
       const btn = document.getElementById('btnGuardar');
       btn.disabled = true;
@@ -433,7 +384,7 @@
 
       fetch(WEB_APP_URL, {
         method: 'POST',
-        mode: 'no-cors', // Evita restricciones CORS con Apps Script
+        mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(datos)
       })
@@ -459,6 +410,9 @@
       buscando = false;
       mostrarEstado("", "");
     }
+
+    // Iniciar escáner al cargar la página
+    window.onload = initScanner;
   </script>
 </body>
 </html>
