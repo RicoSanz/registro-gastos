@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prueba de Cámara Web</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background-color: #f4f4f9;
+      margin: 0;
+    }
+    h2 { color: #333; }
+    video {
+      width: 100%;
+      max-width: 500px;
+      border: 3px solid #007bff;
+      border-radius: 8px;
+      background-color: #000;
+    }
+    .controls {
+      margin-top: 15px;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .btn-start { background-color: #28a745; color: white; }
+    .btn-stop { background-color: #dc3545; color: white; }
+  </style>
+</head>
+<body>
+
+  <h2>Lector/Visor de Cámara HTML5</h2>
+  <video id="webcam" autoplay playsinline></video>
+
+  <div class="controls">
+    <button class="btn-start" onclick="startCamera()">Encender Cámara</button>
+    <button class="btn-stop" onclick="stopCamera()">Apagar Cámara</button>
+  </div>
+
+  <script>
+    let streamRef = null;
+
+    async function startCamera() {
+      try {
+        // Solicita permiso al usuario para usar la cámara
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: "environment" // Usa la cámara trasera en celulares (o 'user' para la frontal)
+          },
+          audio: false
+        });
+
+        streamRef = stream;
+        const videoElement = document.getElementById('webcam');
+        videoElement.srcObject = stream;
+      } catch (error) {
+        console.error("Error al acceder a la cámara:", error);
+        alert("No se pudo acceder a la cámara. Asegúrate de dar permisos en el navegador.");
+      }
+    }
+
+    function stopCamera() {
+      if (streamRef) {
+        // Detiene todas las pistas de video activas
+        streamRef.getTracks().forEach(track => track.stop());
+        document.getElementById('webcam').srcObject = null;
+        streamRef = null;
+      }
+    }
+  </script>
+
+</body>
+</html>
