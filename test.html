@@ -89,7 +89,7 @@
       border-color: #fca5a5;
     }
 
-    /* Lector QR Centrado y Ajustado */
+    /* Lector QR - Corrección de alineación del recuadro */
     .scanner-wrapper {
       position: relative;
       width: 100%;
@@ -104,12 +104,26 @@
       width: 100% !important;
       height: 100% !important;
       border: none !important;
+      position: relative;
     }
 
     #reader video {
       width: 100% !important;
       height: 100% !important;
       object-fit: cover !important;
+    }
+
+    /* Ocultar elementos estáticos internos que causan desfasamiento */
+    #reader __status_span { display: none !important; }
+    #reader img { display: none !important; }
+    
+    /* Centrado forzado del marco guía generado por la librería */
+    #reader #qr-shaded-region {
+      position: absolute !important;
+      top: 50% !important;
+      left: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      margin: 0 !important;
     }
 
     #reader.flash-success {
@@ -316,7 +330,7 @@
       "reader", 
       { 
         fps: 15, 
-        qrbox: { width: 130, height: 130 },
+        qrbox: { width: 120, height: 120 },
         aspectRatio: 1.0
       },
       /* verbose= */ false
@@ -355,3 +369,131 @@
       btn.innerText = "Activar Cámara";
       btn.classList.remove('active');
     }
+  }
+
+  function onScanSuccess(decodedText) {
+    if (escaneoBloqueado) return;
+
+    const clave = decodedText.trim();
+    if (!clave) return;
+
+    destacarCamara();
+    if (navigator.vibrate) navigator.vibrate(80);
+
+    procesarBusqueda(clave);
+  }
+
+  function onScanFailure(error) {}
+
+  function destacarCamara() {
+    const readerEl = document.getElementById('reader');
+    readerEl.classList.add('flash-success');
+    setTimeout(() => {
+      readerEl.classList.remove('flash-success');
+    }, 350);
+  }
+
+  function buscarManual() {
+    const input = document.getElementById('manualNoLista');
+    const clave = input.value.trim();
+    if (!clave) {
+      alert("Por favor ingresa una clave o número válido.");
+      return;
+    }
+    procesarBusqueda(clave);
+  }
+
+  function procesarBusqueda(clave) {
+    const status = document.getElementById('searchStatus');
+    status.style.color = "inherit";
+    status.innerText = "Buscando...";
+
+    const claveLimpia = clave.toUpperCase();
+    const alumno = alumnosCache.find(a => String(a.noLista).trim().toUpperCase() === claveLimpia);
+
+    if (alumno) {
+      alumnoSeleccionado = alumno;
+      document.getElementById('infoNoLista').innerText = alumno.noLista;
+      document.getElementById('infoNombre').innerText = alumno.nombre;
+      document.getElementById('infoApellidos').innerText = alumno.apellidos;
+      document.getElementById('btnGuardar').disabled = false;
+      status.style.color = "var(--success)";
+      status.innerText = "Alumno encontrado.";
+    } else {
+      limpiarDatosAlumno();
+      status.style.color = "var(--danger)";
+      status.innerText = `Sin registros para: ${clave}`;
+    }
+  }
+
+  function guardarRegistro() {
+    if (!alumnoSeleccionado) return;
+
+    const btn = document.getElementById('btnGuardar');
+    const saveStatus = document.getElementById('saveStatus');
+    const estatusVal = document.getElementById('estatus').value;
+    const tareaVal = document.getElementById('tarea').value;
+    const obsVal = document.getElementById('observaciones').value;
+
+    btn.disabled = true;
+    saveStatus.style.color = "inherit";
+    saveStatus.innerText = "Guardando...";
+
+    escaneoBloqueado = true;
+
+    const script = document.createElement('script');
+    const url = `${SCRIPT_URL}?action=guardar&noLista=${encodeURIComponent(alumnoSeleccionado.noLista)}` +
+                `&nombre=${encodeURIComponent(alumnoSeleccionado.nombre)}` +
+                `&apellidos=${encodeURIComponent(alumnoSeleccionado.apellidos)}` +
+                `&estatus=${encodeURIComponent(estatusVal)}` +
+                `&tarea=${encodeURIComponent(tareaVal)}` +
+                `&observaciones=${encodeURIComponent(obsVal)}` +
+                `&callback=registroGuardado`;
+
+    script.src = url;
+    document.body.appendChild(script);
+  }
+
+  function registroGuardado(response) {
+    const saveStatus = document.getElementById('saveStatus');
+    const status = document.getElementById('searchStatus');
+
+    if (response && response.exito) {
+      saveStatus.style.color = "var(--success)";
+      saveStatus.innerText = "¡Guardado!";
+
+      limpiarFormularioCompleto();
+
+      setTimeout(() => {
+        saveStatus.innerText = "";
+        status.innerText = "Listo para escanear.";
+        escaneoBloqueado = false;
+      }, 1200);
+
+    } else {
+      saveStatus.style.color = "var(--danger)";
+      saveStatus.innerText = "Error al guardar.";
+      document.getElementById('btnGuardar').disabled = false;
+      escaneoBloqueado = false;
+    }
+  }
+
+  function limpiarDatosAlumno() {
+    alumnoSeleccionado = null;
+    document.getElementById('infoNoLista').innerText = "-";
+    document.getElementById('infoNombre').innerText = "-";
+    document.getElementById('infoApellidos').innerText = "-";
+    document.getElementById('btnGuardar').disabled = true;
+  }
+
+  function limpiarFormularioCompleto() {
+    limpiarDatosAlumno();
+    document.getElementById('manualNoLista').value = "";
+    document.getElementById('observaciones').value = "";
+    document.getElementById('estatus').value = "Asistencia";
+    document.getElementById('tarea').value = "Cumplió";
+  }
+</script>
+
+</body>
+</html>
