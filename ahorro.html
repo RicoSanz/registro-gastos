@@ -192,14 +192,26 @@
   </div>
 
   <form id="ahorroForm">
-    <!-- FILA 1: PERIODO Y FECHA -->
+    <!-- FILA 1: CANTIDAD Y TIPO -->
+    <div class="row-2">
+      <div class="form-group">
+        <span class="label">Cantidad ($)</span>
+        <input type="number" id="cantidad" step="0.01" min="0.01" placeholder="0.00" required>
+      </div>
+      <div class="form-group">
+        <span class="label">Tipo</span>
+        <div class="btn-grid grid-tipo" id="tipoGrid"></div>
+      </div>
+    </div>
+	
+    <!-- FILA 2: PERIODO Y FECHA -->
     <div class="row-2">
       <div class="form-group">
         <span class="label">Periodo</span>
         <div class="periodo-container">
           <div class="periodo-toggle">
-            <label><input type="radio" name="tipoPeriodo" value="INT" onchange="actualizarPeriodoUI()"> INT</label>
-            <label><input type="radio" name="tipoPeriodo" value="LISTA" checked onchange="actualizarPeriodoUI()"> Lista</label>
+            <label><input type="radio" name="tipoPeriodo" value="INT" checked onchange="actualizarPeriodoUI()"> INT</label>
+            <label><input type="radio" name="tipoPeriodo" value="LISTA" onchange="actualizarPeriodoUI()"> Lista</label>
           </div>
           <select id="periodoSelect" style="flex: 1;"></select>
         </div>
@@ -210,28 +222,16 @@
       </div>
     </div>
 
-    <!-- FILA 2: APARTADO -->
+    <!-- FILA 3: APARTADO -->
     <div class="form-group">
       <span class="label">Apartado</span>
       <div class="btn-grid grid-apartados" id="apartadoGrid"></div>
     </div>
 
-    <!-- FILA 3: CUENTAS -->
+    <!-- FILA 4: CUENTAS -->
     <div class="form-group">
       <span class="label">Cuenta</span>
       <div class="btn-grid grid-cuentas" id="cuentaGrid"></div>
-    </div>
-
-    <!-- FILA 4: CANTIDAD Y TIPO -->
-    <div class="row-2">
-      <div class="form-group">
-        <span class="label">Tipo</span>
-        <div class="btn-grid grid-tipo" id="tipoGrid"></div>
-      </div>
-      <div class="form-group">
-        <span class="label">Cantidad ($)</span>
-        <input type="number" id="cantidad" step="0.01" min="0.01" placeholder="0.00" required>
-      </div>
     </div>
 
     <!-- FILA 5: COMENTARIO -->
