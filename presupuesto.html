@@ -133,7 +133,7 @@
       display: block;
       margin-bottom: 2px;
       color: var(--text-label);
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
       text-transform: uppercase;
     }
@@ -223,7 +223,7 @@
     .screen { display: none; }
     .screen.active { display: block; }
 
-    /* ESTILOS DE LISTADO Y TARJETAS EN 2 COLUMNAS */
+    /* ESTILOS DE LISTADO Y TARJETAS EN 3 COLUMNAS */
     .results-list {
       max-height: 575px;
       overflow-y: auto;
@@ -242,7 +242,7 @@
 
     .grid-card-2col {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr;
       gap: 4px 10px;
       align-items: center;
     }
@@ -484,7 +484,7 @@
     <!-- FILTRO SERVIDOR (PERIODO + REFRESCAR) -->
     <div class="form-group" style="margin-bottom: 6px;">
       <label for="filtroPeriodo">Periodo</label>
-      <div style="display: flex; gap: 6px;">
+      <div style="display: flex; gap: 110px;">
         <select id="filtroPeriodo" style="flex: 1;"></select>
         <button type="button" class="btn-refresh" onclick="descargarPresupuestoServidor()">
           🔄 Refrescar
@@ -909,7 +909,8 @@
           
           card.innerHTML = `
             <div class="grid-card-2col">
-              <div class="col-item">
+              
+			  <div class="col-item">
                 <span class="col-label">Categoría</span>
                 <span class="col-val" style="color: var(--primary); font-weight:700;">${item.categoria}</span>
               </div>
@@ -918,26 +919,27 @@
                 <span class="col-val">${item.concepto}</span>
               </div>
               <div class="col-item">
-                <span class="col-label">Monto</span>
-                <span class="col-val">$${item.monto.toFixed(2)}</span>
-              </div>
-              <div class="col-item">
-                <span class="col-label">Resto / Real</span>
-                <span class="col-val">$${item.resto.toFixed(2)} / $${item.restoReal.toFixed(2)}</span>
-              </div>
-              <div class="col-item">
-                <span class="col-label">Fecha Límite</span>
-                <span class="col-val">${item.fecha || 'N/A'}</span>
-              </div>
-              <div class="col-item"></div>
-              <div class="col-item">
-                <span class="col-label">Activo?</span>
-                <span class="badge ${item.activo === 'SI' ? 'badge-si' : 'badge-no'}">${item.activo}</span>
-              </div>
-              <div class="col-item">
                 <span class="col-label">Pendiente</span>
                 <span class="badge ${item.pendiente === 'SI' ? 'badge-si' : 'badge-no'}">${item.pendiente}</span>
               </div>
+              
+			  <div class="col-item">
+                <span class="col-label">Fecha Límite</span>
+                <span class="col-val">${item.fecha || 'N/A'}</span>
+              </div>              
+			  <div class="col-item">
+                <span class="col-label">Presupuesto</span>
+                <span class="col-val">$${item.monto.toFixed(2)}</span>
+              </div>
+              <div class="col-item">
+                <span class="col-label">Resto teórico / Real</span>
+                <span class="col-val">$${item.resto.toFixed(2)} / $${item.restoReal.toFixed(2)}</span>
+              </div>
+              
+			  <div class="col-item">
+                <span class="col-label">Activo?</span>
+                <span class="badge ${item.activo === 'SI' ? 'badge-si' : 'badge-no'}">${item.activo}</span>
+              </div>			  
               <div class="col-item" style="grid-column: span 1;">
                 <span class="col-label">Notas</span>
                 <span class="col-val" style="font-size: 11px;">${item.notas || '-'}</span>
